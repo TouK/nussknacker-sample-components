@@ -1,0 +1,18 @@
+.idea/
+target/
+*.iml
+.*orig
+.bloop
+.vscode
+.metals
+metals.sbt
+*.jar
+junit.xml
+# Ignore Mac DS_Store files
+.DS_Store
+*.log.logstashjson
+out/
+*.bsp
+*.swp
+.gradle
+*build
