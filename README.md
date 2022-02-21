@@ -14,7 +14,7 @@ If you are using setup based on docker-compose, you can mount jar as additional 
 ```
 - /(...)/sampleComponents.jar:/opt/nussknacker/components/common/sampleComponents.jar
 ``` 
-in [docker-compose](https://github.com/TouK/nussknacker-quickstart/blob/main/docker-compose.yml#L25)
+in [docker-compose](https://github.com/TouK/nussknacker-quickstart/blob/main/docker/docker-compose.yml#L25)
 
 For more production-ready setups (e.g. Kubernetes) it is better to create image based on
 official Nussknacker image with jar added. See gradle project and `docker/Dockerfile` for a sample.
