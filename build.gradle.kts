@@ -1,6 +1,7 @@
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 plugins {
+    kotlin("jvm") version "1.6.10"
     base
     `java-library`
     scala
@@ -17,6 +18,7 @@ val nussknackerVersion: String = File("./nussknacker.version").readText(Charsets
 
 dependencies {
     compileOnly("org.scala-lang:scala-library:${scalaVersion}")
+    testImplementation("org.scala-lang:scala-library:${scalaVersion}")
     //nussknacker-api should not be included in fatjar, as it's provided by engine/designer
     compileOnly("pl.touk.nussknacker:nussknacker-api_2.12:${nussknackerVersion}")
     testImplementation("pl.touk.nussknacker:nussknacker-test-util_2.12:${nussknackerVersion}")
@@ -28,6 +30,7 @@ dependencies {
         exclude("org.apache.commons", "commons-lang3")
     }
     compileOnly("org.apache.commons:commons-lang3:3.9")
+    testImplementation(kotlin("test"))
 }
 
 repositories {
@@ -56,4 +59,8 @@ tasks.create("buildLiteKafkaRuntimeImage", DockerBuildImage::class) {
 
 tasks.create("buildImages", DefaultTask::class) {
     dependsOn("buildDesignerImage", "buildLiteKafkaRuntimeImage")
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
