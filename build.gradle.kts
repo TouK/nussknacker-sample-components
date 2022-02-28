@@ -21,8 +21,8 @@ dependencies {
     testImplementation("org.scala-lang:scala-library:${scalaVersion}")
     //nussknacker-api should not be included in fatjar, as it's provided by engine/designer
     compileOnly("pl.touk.nussknacker:nussknacker-api_2.12:${nussknackerVersion}")
-    testImplementation("pl.touk.nussknacker:nussknacker-test-util_2.12:${nussknackerVersion}")
-    testImplementation("pl.touk.nussknacker:nussknacker-flink-test-util_2.12:${nussknackerVersion}")
+    testImplementation("pl.touk.nussknacker:nussknacker-test-utils_2.12:${nussknackerVersion}")
+    testImplementation("pl.touk.nussknacker:nussknacker-flink-test-utils_2.12:${nussknackerVersion}")
     testImplementation("pl.touk.nussknacker:nussknacker-flink-executor_2.12:${nussknackerVersion}")
     testImplementation("pl.touk.nussknacker:nussknacker-flink-manager_2.12:${nussknackerVersion}")
     testImplementation("pl.touk.nussknacker:nussknacker-lite-runtime_2.12:${nussknackerVersion}")
