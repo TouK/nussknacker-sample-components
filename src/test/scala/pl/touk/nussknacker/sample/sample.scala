@@ -1,11 +1,11 @@
 package pl.touk.nussknacker.sample
 
-import cats.{Functor, Id, Monad, catsInstancesForId}
-import cats.data.{State, ValidatedNel}
 import cats.data.Validated.Valid
+import cats.data.ValidatedNel
+import cats.{Id, Monad, catsInstancesForId}
 import com.typesafe.config.ConfigFactory
+import pl.touk.nussknacker.engine.Interpreter.InterpreterShape
 import pl.touk.nussknacker.engine.Interpreter.InterpreterShape.transform
-import pl.touk.nussknacker.engine.Interpreter.{FutureShape, InterpreterShape}
 import pl.touk.nussknacker.engine.api._
 import pl.touk.nussknacker.engine.api.process._
 import pl.touk.nussknacker.engine.graph.EspProcess
@@ -16,11 +16,9 @@ import pl.touk.nussknacker.engine.lite.api.interpreterTypes.{EndResult, Scenario
 import pl.touk.nussknacker.engine.lite.api.runtimecontext.LiteEngineRuntimeContextPreparer
 import pl.touk.nussknacker.engine.lite.api.utils.sinks.LazyParamSink
 import pl.touk.nussknacker.engine.lite.capabilities.FixedCapabilityTransformer
-import pl.touk.nussknacker.engine.process.ExecutionConfigPreparer
 import pl.touk.nussknacker.engine.resultcollector.ProductionServiceInvocationCollector
 import pl.touk.nussknacker.engine.testing.LocalModelData
 import pl.touk.nussknacker.engine.util.SynchronousExecutionContext
-import pl.touk.nussknacker.engine.util.process.EmptyProcessConfigCreator
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.higherKinds
