@@ -26,7 +26,7 @@ dependencies {
     testImplementation("pl.touk.nussknacker:nussknacker-flink-executor_2.12:${nussknackerVersion}")
     testImplementation("pl.touk.nussknacker:nussknacker-flink-manager_2.12:${nussknackerVersion}")
     testImplementation("pl.touk.nussknacker:nussknacker-lite-runtime_2.12:${nussknackerVersion}")
-    testImplementation("pl.touk.nussknacker:nussknacker-lite-kafka-runtime_2.12:${nussknackerVersion}")
+//    testImplementation("pl.touk.nussknacker:nussknacker-lite-kafka-runtime_2.12:${nussknackerVersion}")
 //    testImplementation("pl.touk.nussknacker:nussknacker-lite-components-api_2.12:${nussknackerVersion}")
     implementation("org.apache.commons:commons-text:1.8") {
         exclude("org.apache.commons", "commons-lang3")
