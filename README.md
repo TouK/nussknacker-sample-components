@@ -2,7 +2,7 @@ This project contains sample implementation of custom components for [Nussknacke
 
 # Usage
        
-At the moment we provide simple [enricher provider](src/main/scala/pl/touk/nussknacker/sample/SampleComponentProvider.scala), 
+At the moment we provide simple [enricher provider](components/src/main/scala/pl/touk/nussknacker/sample/SampleComponentProvider.scala), 
 which generates random string, using `commons-text` library to demonstrate how to add additional dependencies.
 
 To use custom component, you have to put fat jar with the component 

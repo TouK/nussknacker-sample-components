@@ -14,25 +14,9 @@ val scalaVersion = "2.12.10"
 
 group = "pl.touk.nussknacker"
 
-val nussknackerVersion: String = File("./nussknacker.version").readText(Charsets.UTF_8)
-
-dependencies {
-    compileOnly("org.scala-lang:scala-library:${scalaVersion}")
-    testImplementation("org.scala-lang:scala-library:${scalaVersion}")
-    //nussknacker-api should not be included in fatjar, as it's provided by engine/designer
-    compileOnly("pl.touk.nussknacker:nussknacker-api_2.12:${nussknackerVersion}")
-    testImplementation("pl.touk.nussknacker:nussknacker-test-utils_2.12:${nussknackerVersion}")
-    testImplementation("pl.touk.nussknacker:nussknacker-flink-test-utils_2.12:${nussknackerVersion}")
-    testImplementation("pl.touk.nussknacker:nussknacker-flink-executor_2.12:${nussknackerVersion}")
-    testImplementation("pl.touk.nussknacker:nussknacker-flink-manager_2.12:${nussknackerVersion}")
-    testImplementation("pl.touk.nussknacker:nussknacker-lite-runtime_2.12:${nussknackerVersion}")
-//    testImplementation("pl.touk.nussknacker:nussknacker-lite-kafka-runtime_2.12:${nussknackerVersion}")
-//    testImplementation("pl.touk.nussknacker:nussknacker-lite-components-api_2.12:${nussknackerVersion}")
-    implementation("org.apache.commons:commons-text:1.8") {
-        exclude("org.apache.commons", "commons-lang3")
-    }
-    compileOnly("org.apache.commons:commons-lang3:3.9")
-    testImplementation(kotlin("test"))
+var nussknackerVersion: String by extra
+ext {
+    nussknackerVersion = File("./nussknacker.version").readText(Charsets.UTF_8)
 }
 
 repositories {

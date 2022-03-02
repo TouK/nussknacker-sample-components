@@ -3,7 +3,7 @@ package pl.touk.nussknacker.sample
 import org.junit.runner.RunWith
 import org.scalatest.{FunSuite, Matchers}
 import org.scalatestplus.junit.JUnitRunner
-import pl.touk.nussknacker.engine.build.{EspProcessBuilder, StreamingLiteScenarioBuilder}
+import pl.touk.nussknacker.engine.build.StreamingLiteScenarioBuilder
 import pl.touk.nussknacker.engine.lite.api.interpreterTypes.{ScenarioInputBatch, SourceId}
 import pl.touk.nussknacker.engine.spel.Implicits._
 import pl.touk.nussknacker.sample.sample.SampleInput
@@ -19,7 +19,6 @@ class SampleComponentProviderLiteTest extends FunSuite with Matchers {
         .parallelism(1)
         .source("custom-source-node-name", "startSource")
         .processor("component-provider-service-node-name", "randomString", "length" -> "12")
-        //        .processorEnd("custom-sink-node-name", "mockService", "all" -> s"12")
         .emptySink("end", "end", "value" -> "#input")
 
     val results = sample.run(process,

@@ -22,7 +22,6 @@ class SampleComponentProvider extends ComponentProvider {
 
   override def isAutoLoaded: Boolean = true
 
-
 }
 
 class RandomStringProvider extends Service {
