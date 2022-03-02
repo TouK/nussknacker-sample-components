@@ -28,13 +28,13 @@ class SampleComponentProviderTest extends FunSuite with FlinkSpec with Matchers 
   test("should test sample component on flink runtime") {
     val process =
       EspProcessBuilder
-        .id("sample_notification")
+        .id("test scenario")
         .source("custom-source-node-name", "source")
         .processor("component-provider-service-node-name", "randomString", "length" -> "12")
         .processorEnd("custom-sink-node-name", "mockService", "all" -> s"#input")
 
     run(process, List("mockValue"))
-    MockService.data shouldBe(List("mockValue"))
+    MockService.data shouldBe (List("mockValue"))
   }
 
   private var registrar: FlinkProcessRegistrar = _
@@ -42,7 +42,8 @@ class SampleComponentProviderTest extends FunSuite with FlinkSpec with Matchers 
   override protected def beforeAll(): Unit = {
     super.beforeAll()
   }
-  private def run(process: EspProcess,data: List[String]): Unit = {
+
+  private def run(process: EspProcess, data: List[String]): Unit = {
     val loadedConfig = new DefaultModelConfigLoader().resolveInputConfigDuringExecution(config, getClass.getClassLoader)
     import org.apache.flink.streaming.api.scala._
     val modelData = LocalModelData(loadedConfig.config, new BaseSampleConfigCreator(data))
@@ -51,7 +52,7 @@ class SampleComponentProviderTest extends FunSuite with FlinkSpec with Matchers 
 
     val env = flinkMiniCluster.createExecutionEnvironment()
     registrar.register(new scala.StreamExecutionEnvironment(env), process, ProcessVersion.empty, DeploymentData.empty)
-    env.withJobRunning(process.id){}
+    env.withJobRunning(process.id) {}
   }
 
 }

@@ -26,7 +26,7 @@ import scala.language.higherKinds
 /*
   Id based engine
  */
-object sample {
+object minimalLiteRuntime {
 
   case object SourceFailure extends Exception("Source failure")
 
