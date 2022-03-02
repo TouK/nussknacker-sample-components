@@ -1,7 +1,6 @@
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 plugins {
-    kotlin("jvm") version "1.6.10"
     base
     `java-library`
     scala
