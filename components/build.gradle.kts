@@ -23,7 +23,7 @@ dependencies {
     compileOnly("org.scala-lang:scala-library:${scalaVersion}")
     testImplementation("org.scala-lang:scala-library:${scalaVersion}")
     //nussknacker-api should not be included in fatjar, as it's provided by engine/designer
-    compileOnly("pl.touk.nussknacker:nussknacker-api_2.12:${nussknackerVersion}")
+    compileOnly("pl.touk.nussknacker:nussknacker-components-api_2.12:${nussknackerVersion}")
     implementation("org.apache.commons:commons-text:1.8") {
         exclude("org.apache.commons", "commons-lang3")
     }
