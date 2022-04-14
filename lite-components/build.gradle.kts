@@ -24,8 +24,7 @@ dependencies {
 
     compileOnly("org.scala-lang:scala-library:${scalaVersion}")
     testImplementation("org.scala-lang:scala-library:${scalaVersion}")
-    testImplementation("pl.touk.nussknacker:nussknacker-test-utils_2.12:${nussknackerVersion}")
-    testImplementation("pl.touk.nussknacker:nussknacker-lite-runtime_2.12:${nussknackerVersion}")
+    testImplementation("pl.touk.nussknacker:nussknacker-lite-components-testkit_2.12:${nussknackerVersion}")
 
     testImplementation("junit:junit:4.13.2")
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.8.2")

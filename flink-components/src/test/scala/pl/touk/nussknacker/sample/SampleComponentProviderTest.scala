@@ -1,58 +1,39 @@
 package pl.touk.nussknacker.sample
 
-import com.typesafe.config.ConfigFactory
-import org.apache.flink.streaming.api.scala
+import com.typesafe.config.{Config, ConfigFactory}
 import org.junit.runner.RunWith
+import org.scalatest.Inside.inside
 import org.scalatest.{FunSuite, Matchers}
 import org.scalatestplus.junit.JUnitRunner
-import pl.touk.nussknacker.engine.api.ProcessVersion
-import pl.touk.nussknacker.engine.build.EspProcessBuilder
-import pl.touk.nussknacker.engine.deployment.DeploymentData
+import pl.touk.nussknacker.engine.build.ScenarioBuilder
 import pl.touk.nussknacker.engine.flink.test.FlinkSpec
-import pl.touk.nussknacker.engine.graph.EspProcess
-import pl.touk.nussknacker.engine.modelconfig.DefaultModelConfigLoader
-import pl.touk.nussknacker.engine.process.ExecutionConfigPreparer
-import pl.touk.nussknacker.engine.process.compiler.FlinkProcessCompiler
-import pl.touk.nussknacker.engine.process.helpers.BaseSampleConfigCreator
-import pl.touk.nussknacker.engine.process.helpers.SampleNodes.MockService
-import pl.touk.nussknacker.engine.process.registrar.FlinkProcessRegistrar
+import pl.touk.nussknacker.engine.flink.util.test.NuTestScenarioRunner
 import pl.touk.nussknacker.engine.spel.Implicits._
-import pl.touk.nussknacker.engine.testing.LocalModelData
 
 //to run scalatest with gradle use JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class SampleComponentProviderTest extends FunSuite with FlinkSpec with Matchers {
 
-  override protected lazy val config = ConfigFactory.empty()
+  override protected lazy val config: Config = ConfigFactory.empty()
 
   test("should test sample component on flink runtime") {
-    val process =
-      EspProcessBuilder
-        .id("test scenario")
+    val scenario = ScenarioBuilder
+        .streaming("test scenario")
         .source("custom-source-node-name", "source")
-        .processor("component-provider-service-node-name", "randomString", "length" -> "12")
-        .processorEnd("custom-sink-node-name", "mockService", "all" -> s"#input")
+        .enricher("component-provider-service-node-name", "output", "randomString", "length" -> "#input")
+        .processorEnd("end", "invocationCollector", "value" -> "#output")
+      
+    val runner = NuTestScenarioRunner
+      .flinkBased(config, flinkMiniCluster)
+      .build()
 
-    run(process, List("mockValue"))
-    MockService.data shouldBe (List("mockValue"))
-  }
+    val length = 5
+    val results = runner.runWithData[Int, String](scenario, List(length))
 
-  private var registrar: FlinkProcessRegistrar = _
+    inside(results) { case data :: Nil =>
+      data should have length length
+    }
 
-  override protected def beforeAll(): Unit = {
-    super.beforeAll()
-  }
-
-  private def run(process: EspProcess, data: List[String]): Unit = {
-    val loadedConfig = new DefaultModelConfigLoader().resolveInputConfigDuringExecution(config, getClass.getClassLoader)
-    import org.apache.flink.streaming.api.scala._
-    val modelData = LocalModelData(loadedConfig.config, new BaseSampleConfigCreator(data))
-
-    registrar = FlinkProcessRegistrar(new FlinkProcessCompiler(modelData), ExecutionConfigPreparer.unOptimizedChain(modelData))
-
-    val env = flinkMiniCluster.createExecutionEnvironment()
-    registrar.register(new scala.StreamExecutionEnvironment(env), process, ProcessVersion.empty, DeploymentData.empty)
-    env.withJobRunning(process.id) {}
   }
 
 }
