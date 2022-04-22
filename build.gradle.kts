@@ -13,16 +13,9 @@ val scalaVersion = "2.12.10"
 
 group = "pl.touk.nussknacker"
 
-val nussknackerVersion: String = File("./nussknacker.version").readText(Charsets.UTF_8)
-
-dependencies {
-    compileOnly("org.scala-lang:scala-library:${scalaVersion}")
-    //nussknacker-api should not be included in fatjar, as it's provided by engine/designer
-    compileOnly("pl.touk.nussknacker:nussknacker-api_2.12:${nussknackerVersion}")
-    implementation("org.apache.commons:commons-text:1.8") {
-        exclude("org.apache.commons", "commons-lang3")
-    }
-    compileOnly("org.apache.commons:commons-lang3:3.9")
+var nussknackerVersion: String by extra
+ext {
+    nussknackerVersion = File("./nussknacker.version").readText(Charsets.UTF_8)
 }
 
 repositories {
@@ -51,4 +44,8 @@ tasks.create("buildLiteKafkaRuntimeImage", DockerBuildImage::class) {
 
 tasks.create("buildImages", DefaultTask::class) {
     dependsOn("buildDesignerImage", "buildLiteKafkaRuntimeImage")
+}
+
+tasks.test {
+    useJUnitPlatform()
 }

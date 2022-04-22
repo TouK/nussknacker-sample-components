@@ -21,11 +21,12 @@ class SampleComponentProvider extends ComponentProvider {
   override def isCompatible(version: NussknackerVersion): Boolean = true
 
   override def isAutoLoaded: Boolean = true
+
 }
 
 class RandomStringProvider extends Service {
 
-  private val builder = new RandomStringGenerator.Builder().build()
+  private val builder = new RandomStringGenerator.Builder().withinRange('a', 'z').build()
 
   @MethodToInvoke
   def invoke(@ParamName("length") argument: Int): Future[String] = Future.successful {
