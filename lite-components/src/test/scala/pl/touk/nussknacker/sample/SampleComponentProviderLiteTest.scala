@@ -2,16 +2,16 @@ package pl.touk.nussknacker.sample
 
 import com.typesafe.config.ConfigFactory
 import org.junit.runner.RunWith
-import org.scalatest.Inside.inside
 import org.scalatest.{FunSuite, Matchers}
 import org.scalatestplus.junit.JUnitRunner
 import pl.touk.nussknacker.engine.build.ScenarioBuilder
 import pl.touk.nussknacker.engine.lite.util.test.LiteTestScenarioRunner
+import pl.touk.nussknacker.test.ValidatedValuesDetailedMessage
 import pl.touk.nussknacker.engine.spel.Implicits._
 
 //to run scalatest with gradle use JUnitRunner
 @RunWith(classOf[JUnitRunner])
-class SampleComponentProviderLiteTest extends FunSuite with Matchers {
+class SampleComponentProviderLiteTest extends FunSuite with Matchers with ValidatedValuesDetailedMessage {
 
   private case class SimpleInput(length: Int)
 
@@ -30,14 +30,11 @@ class SampleComponentProviderLiteTest extends FunSuite with Matchers {
 
     val runner = LiteTestScenarioRunner(Nil, ConfigFactory.empty())
 
-    val results = runner.runWithData[SimpleInput, String](scenario, inputData)
+    val results = runner.runWithData[SimpleInput, String](scenario, inputData).validValue
 
-    inside(results) { case list =>
-      list should have length totalLength
-      list.zipWithIndex.foreach {
-        case (generated, expectedLength) => generated should have length expectedLength
-      }
+    results.successes should have length totalLength
+    results.successes.zipWithIndex.foreach {
+      case (generated, expectedLength) => generated should have length expectedLength
     }
-
   }
 }
