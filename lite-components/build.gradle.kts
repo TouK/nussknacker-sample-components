@@ -13,6 +13,7 @@ val scalaVersion = "2.12.10"
 repositories {
     //this is where NU artifacts are stored
     maven("https://oss.sonatype.org/content/groups/public/")
+    maven("https://packages.confluent.io/maven/")
 
     mavenCentral()
 }
@@ -32,4 +33,9 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+//for gradle wrongly resoling scala 2.13
+configurations.all {
+    resolutionStrategy.force("org.scala-lang:scala-library:$scalaVersion")
 }
