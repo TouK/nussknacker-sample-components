@@ -34,3 +34,8 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
+//for gradle wrongly resoling scala 2.13
+configurations.all {
+    resolutionStrategy.force("org.scala-lang:scala-library:$scalaVersion")
+}
