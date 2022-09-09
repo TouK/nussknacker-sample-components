@@ -1,5 +1,24 @@
 name: CI
-on: [push]
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+  pull_request:
+    branches:
+      - main
+      - staging
+  workflow_dispatch:
+    inputs:
+      nussknacker_version:
+        description: "Nussknacker version"
+        required: false
+        type: string
+
+env:
+  NUSSKNACKER_VERSION: ${{ inputs.nussknacker_version }}
+
 jobs:
   build:
     name: Build
@@ -9,6 +28,8 @@ jobs:
         uses: styfle/cancel-workflow-action@0.8.0
         with:
           access_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update root CA
+        run: sudo update-ca-certificates -f
       - uses: actions/checkout@v2
       - uses: olafurpg/setup-scala@v10
         with:
