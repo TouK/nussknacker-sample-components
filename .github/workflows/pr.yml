@@ -5,10 +5,12 @@ on:
     branches:
       - main
       - staging
+      - release/*
   pull_request:
     branches:
       - main
       - staging
+      - release/*
   workflow_dispatch:
     inputs:
       nussknacker_version:
