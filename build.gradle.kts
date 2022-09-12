@@ -15,12 +15,19 @@ group = "pl.touk.nussknacker"
 
 var nussknackerVersion: String by extra
 ext {
-    nussknackerVersion = File("./nussknacker.version").readText(Charsets.UTF_8)
+    val versionFromEnv = System.getenv()["NUSSKNACKER_VERSION"]
+    if (versionFromEnv.isNullOrBlank()) {
+        nussknackerVersion = File("./nussknacker.version").readText(Charsets.UTF_8)
+    } else {
+        nussknackerVersion = versionFromEnv
+    }
 }
+println("Nussknacker version: $nussknackerVersion")
 
 repositories {
     maven("https://oss.sonatype.org/content/groups/public/")
     mavenCentral()
+    maven("https://packages.confluent.io/maven")
 }
 
 fun commonDockerAction(from: String, target: String, task: DockerBuildImage) {
