@@ -1,23 +1,22 @@
 package pl.touk.nussknacker.sample
 
 import com.typesafe.config.{Config, ConfigFactory}
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.{AfterAll, BeforeAll, Test}
 import org.scalatest.Inside.inside
-import org.scalatest.{FunSuite, Matchers}
-import org.scalatestplus.junit.JUnitRunner
+import org.scalatest.Suite
+import org.scalatest.matchers.should.Matchers
 import pl.touk.nussknacker.engine.build.ScenarioBuilder
 import pl.touk.nussknacker.engine.flink.test.FlinkSpec
 import pl.touk.nussknacker.engine.flink.util.test.NuTestScenarioRunner
 import pl.touk.nussknacker.engine.spel.Implicits._
 import pl.touk.nussknacker.test.ValidatedValuesDetailedMessage
 
-//to run scalatest with gradle use JUnitRunner
-@RunWith(classOf[JUnitRunner])
-class SampleComponentProviderTest extends FunSuite with FlinkSpec with Matchers with ValidatedValuesDetailedMessage {
+class SampleComponentProviderTest extends Matchers with ValidatedValuesDetailedMessage {
 
-  override protected lazy val config: Config = ConfigFactory.empty()
+  import pl.touk.nussknacker.sample.SampleComponentProviderTest._
 
-  test("should test sample component on flink runtime") {
+  @Test
+  def testSampleComponentProviderWithLiteInterpreter(): Unit = {
     val scenario = ScenarioBuilder
       .streaming("test scenario")
       .source("custom-source-node-name", "source")
@@ -34,8 +33,22 @@ class SampleComponentProviderTest extends FunSuite with FlinkSpec with Matchers 
     inside(results.successes) { case data :: Nil =>
       data should have length length
     }
-
   }
 
 }
 
+object SampleComponentProviderTest extends Suite with FlinkSpec {
+
+  override protected lazy val config: Config = ConfigFactory.empty()
+
+  @BeforeAll
+  def init(): Unit = {
+    beforeAll()
+  }
+
+  @AfterAll
+  def tearDown(): Unit = {
+    afterAll()
+  }
+
+}

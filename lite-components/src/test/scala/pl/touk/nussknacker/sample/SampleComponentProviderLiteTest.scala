@@ -1,21 +1,19 @@
 package pl.touk.nussknacker.sample
 
 import com.typesafe.config.ConfigFactory
-import org.junit.runner.RunWith
-import org.scalatest.{FunSuite, Matchers}
-import org.scalatestplus.junit.JUnitRunner
+import org.junit.jupiter.api.Test
+import org.scalatest.matchers.should.Matchers
 import pl.touk.nussknacker.engine.build.ScenarioBuilder
 import pl.touk.nussknacker.engine.lite.util.test.LiteTestScenarioRunner
-import pl.touk.nussknacker.test.ValidatedValuesDetailedMessage
 import pl.touk.nussknacker.engine.spel.Implicits._
+import pl.touk.nussknacker.test.ValidatedValuesDetailedMessage
 
-//to run scalatest with gradle use JUnitRunner
-@RunWith(classOf[JUnitRunner])
-class SampleComponentProviderLiteTest extends FunSuite with Matchers with ValidatedValuesDetailedMessage {
+class SampleComponentProviderLiteTest extends Matchers with ValidatedValuesDetailedMessage {
 
   private case class SimpleInput(length: Int)
 
-  test("should test sample component provider on lite interpreter") {
+  @Test
+  def testSampleComponentProviderWithLiteInterpreter(): Unit = {
 
     val totalLength = 5
     val inputData = (0 until totalLength).map(SimpleInput(_: Int)).toList
@@ -30,10 +28,11 @@ class SampleComponentProviderLiteTest extends FunSuite with Matchers with Valida
 
     val runner = LiteTestScenarioRunner(Nil, ConfigFactory.empty())
 
-    val results = runner.runWithData[SimpleInput, String](scenario, inputData).validValue
+    val results = runner.runWithData[SimpleInput, String](scenario, inputData)
 
-    results.successes should have length totalLength
-    results.successes.zipWithIndex.foreach {
+    val validResults = results.validValue
+    validResults.successes should have length totalLength
+    validResults.successes.zipWithIndex.foreach {
       case (generated, expectedLength) => generated should have length expectedLength
     }
   }
