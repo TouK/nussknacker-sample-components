@@ -45,12 +45,12 @@ fun commonDockerAction(from: String, target: String, task: DockerBuildImage) {
 tasks.create("buildDesignerImage", DockerBuildImage::class) {
     commonDockerAction("touk/nussknacker", rootProject.name, this)
 }
-tasks.create("buildLiteKafkaRuntimeImage", DockerBuildImage::class) {
-    commonDockerAction("touk/nussknacker-lite-kafka-runtime", "${rootProject.name}-lite-kafka-runtime", this)
+tasks.create("buildLiteRuntimeAppImage", DockerBuildImage::class) {
+    commonDockerAction("touk/nussknacker-lite-runtime-app", "${rootProject.name}-lite-runtime-app", this)
 }
 
 tasks.create("buildImages", DefaultTask::class) {
-    dependsOn("buildDesignerImage", "buildLiteKafkaRuntimeImage")
+    dependsOn("buildDesignerImage", "buildLiteRuntimeAppImage")
 }
 
 tasks.test {
