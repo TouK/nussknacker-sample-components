@@ -38,3 +38,9 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
+tasks.withType<ScalaCompile>().configureEach {
+    scalaCompileOptions.apply {
+        additionalParameters = listOf("-Ypartial-unification")
+    }
+}
