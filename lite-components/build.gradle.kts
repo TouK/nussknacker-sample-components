@@ -22,11 +22,12 @@ repositories {
 val nussknackerVersion: String by rootProject.extra
 
 dependencies {
+    implementation(platform("pl.touk.nussknacker:nussknacker-bom_2.12:${nussknackerVersion}"))
     implementation(project(":components"))
 
-    compileOnly("org.scala-lang:scala-library:${scalaVersion}")
-    testImplementation("org.scala-lang:scala-library:${scalaVersion}")
-    testImplementation("pl.touk.nussknacker:nussknacker-lite-components-testkit_2.12:${nussknackerVersion}")
+    compileOnly("org.scala-lang:scala-library")
+    testImplementation("org.scala-lang:scala-library")
+    testImplementation("pl.touk.nussknacker:nussknacker-lite-components-testkit_2.12")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
