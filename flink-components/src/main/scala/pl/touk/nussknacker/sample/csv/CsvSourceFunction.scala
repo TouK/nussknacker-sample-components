@@ -6,6 +6,9 @@ import java.io.File
 import scala.io.Source
 import scala.util.Using
 
+/**
+ * Very simple CSV source function that exits after reading all lines in the file.
+ */
 class CsvSourceFunction[T](file: File,
                            separator: Char,
                            createRecord: Array[String] => T) extends SourceFunction[T] {
@@ -24,7 +27,6 @@ class CsvSourceFunction[T](file: File,
           val record = createRecord(fields)
           ctx.collect(record)
         }
-        // wait for checkpoint?
       }
     }
   }
