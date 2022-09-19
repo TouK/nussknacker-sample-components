@@ -9,7 +9,7 @@ object CallDetailRecordSourceFactory {
   def prepare(filesDir: String, separator: Char): SourceFactory = {
     import org.apache.flink.api.scala.createTypeInformation
 
-    new SpecificRecordCsvFactory[CallDetailRecord](new File(filesDir), separator, CallDetailRecord.fromFields, _.callStartTime)
+    new SpecificRecordCsvSourceFactory[CallDetailRecord](new File(filesDir), separator, CallDetailRecord.fromFields, _.callStartTime)
   }
 }
 
