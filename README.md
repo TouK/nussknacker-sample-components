@@ -1,9 +1,23 @@
 This project contains sample implementation of custom components for [Nussknacker](https://nussknacker.io).
 
-# Usage
-       
-At the moment we provide simple [enricher provider](components/src/main/scala/pl/touk/nussknacker/sample/SampleComponentProvider.scala), 
+# Components
+
+## Common
+
+We provide simple [enricher provider](components/src/main/scala/pl/touk/nussknacker/sample/SampleComponentProvider.scala)
 which generates random string, using `commons-text` library to demonstrate how to add additional dependencies.
+
+## Streaming-Flink only
+
+[Flink provider](flink-components/src/main/scala/pl/touk/nussknacker/sample/FlinkSampleComponentProvider.scala) contains
+sample Flink components to give an idea of how to implement Flink based sources, sinks and custom transformations.
+
+- `cdr` (call detail record) - a source that emits specific case class
+- `csvSource` - a source that emits a CSV record according to the row definition, shares the same Flink source function 
+  as `cdr` source
+- `csvSink` - a sink that writes a row represented as a list of strings to the given file
+
+# Usage
 
 To use custom component, you have to put fat jar with the component 
 on [model classpath](https://docs.nussknacker.io/documentation/docs/installation_configuration_guide/ModelConfiguration#classpath-configuration).
