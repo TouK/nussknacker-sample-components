@@ -1,7 +1,6 @@
 package pl.touk.nussknacker.sample.csv
 
 import cats.data.{Validated, ValidatedNel}
-import cats.implicits.catsSyntaxValidatedId
 import cats.syntax.apply._
 import cats.syntax.traverse._
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner
@@ -14,7 +13,8 @@ import pl.touk.nussknacker.engine.api.process.{Source, SourceFactory}
 import pl.touk.nussknacker.engine.api.typed.TypedMap
 import pl.touk.nussknacker.engine.api.typed.typing.{Typed, TypedObjectTypingResult, TypingResult}
 import pl.touk.nussknacker.engine.flink.api.timestampwatermark.StandardTimestampWatermarkHandler.toAssigner
-import pl.touk.nussknacker.sample.csv.GenericCsvSourceFactory.{DefinitionParameter, FileNameParameter}
+import pl.touk.nussknacker.engine.util.typing.TypingUtils
+import pl.touk.nussknacker.sample.csv.GenericCsvSourceFactory.{ColumnParsers, DefinitionParameter, FileNameParameter}
 
 import java.io.File
 import scala.collection.JavaConverters._
@@ -22,6 +22,11 @@ import scala.collection.JavaConverters._
 object GenericCsvSourceFactory {
   val FileNameParameter: ParameterWithExtractor[String] = ParameterWithExtractor.mandatory("fileName")
   val DefinitionParameter: ParameterWithExtractor[java.util.List[java.util.List[String]]] = ParameterWithExtractor.mandatory("definition")
+
+  private val ColumnParsers: Map[TypingResult, String => Any] = Map(
+    Typed[String] -> identity,
+    Typed[java.lang.Long] -> ((s: String) => s.toLong),
+  )
 }
 
 /**
@@ -70,20 +75,26 @@ class GenericCsvSourceFactory(filesDir: String, separator: Char) extends SourceF
 
   private def describeInput(definition: java.util.List[java.util.List[String]])
                            (implicit nodeId: NodeId): ValidatedNel[ProcessCompilationError, TypingResult] = {
-    val validatedColumns = definition.asScala.toList.zipWithIndex.map { case (column, idx) =>
+    val validatedDefinitionFormat = definition.asScala.toList.zipWithIndex.map { case (column, idx) =>
       Validated.condNel(
         column.size() == 2,
         (column.get(0), column.get(1)),
         CustomNodeError(s"Column ${idx + 1} should have name and type", Some(DefinitionParameter.parameter.name))
-      ).andThen { case (name, typ) =>
-        typ match {
-          case "String" => (name, Typed[String]).validNel
-          case "Long" => (name, Typed[java.lang.Long]).validNel
-          case other => CustomNodeError(s"Type: '$other' for column '$name' is not supported", Some(DefinitionParameter.parameter.name)).invalidNel
-        }
-      }
+      )
     }.sequence
-    validatedColumns.map(TypedObjectTypingResult(_))
+    validatedDefinitionFormat.map(namesAndTypes => TypingUtils.typeMapDefinition(namesAndTypes.toMap))
+      .andThen(ensureDefinitionHasOnlySupportedColumnTypes)
+  }
+
+  private def ensureDefinitionHasOnlySupportedColumnTypes(typingResult: TypingResult)
+                                                         (implicit nodeId: NodeId): ValidatedNel[ProcessCompilationError, TypingResult] = {
+    typingResult.asInstanceOf[TypedObjectTypingResult].fields.map { case (name, typingResult) =>
+      Validated.condNel(
+        ColumnParsers.contains(typingResult),
+        (name, typingResult),
+        CustomNodeError(s"Type for column '$name' is not supported", Some(DefinitionParameter.parameter.name))
+      )
+    }.toList.sequence.map(TypedObjectTypingResult(_))
   }
 
   private def createRecordFunction(definition: java.util.List[java.util.List[String]]): Array[String] => TypedMap = {
