@@ -58,8 +58,8 @@ class CsvSourceTest extends BaseSourceTest with Matchers {
   test("should throw on unknown type") {
     val emptyFile = Files.createTempFile("test", ".csv")
     emptyFile.toFile.deleteOnExit()
-    testCompilationErrors("fileName" -> s"'${emptyFile.getFileName.toString}'", "definition" -> "{{'name', 'String'}, {'phoneNumber', 'unknown'}}")
-      .getMessage should include("Type: 'unknown' for column 'phoneNumber' is not supported")
+    testCompilationErrors("fileName" -> s"'${emptyFile.getFileName.toString}'", "definition" -> "{{'name', 'String'}, {'phoneNumber', 'Integer'}, {'callDuration', 'java.time.Duration'}}")
+      .getMessage should (include("Type for column 'phoneNumber' is not supported") and include("Type for column 'callDuration' is not supported"))
   }
 
   private def testCompilationErrors(params: (String, Expression)*): Exception = {
