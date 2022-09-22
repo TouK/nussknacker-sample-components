@@ -6,9 +6,12 @@ import org.scalatest.matchers.should.Matchers
 import pl.touk.nussknacker.engine.build.ScenarioBuilder
 import pl.touk.nussknacker.engine.lite.util.test.LiteTestScenarioRunner
 import pl.touk.nussknacker.engine.spel.Implicits._
+import pl.touk.nussknacker.engine.util.test.TestScenarioRunner
 import pl.touk.nussknacker.test.ValidatedValuesDetailedMessage
 
 class SampleComponentProviderLiteTest extends Matchers with ValidatedValuesDetailedMessage {
+
+  import LiteTestScenarioRunner._
 
   private case class SimpleInput(length: Int)
 
@@ -26,7 +29,7 @@ class SampleComponentProviderLiteTest extends Matchers with ValidatedValuesDetai
         .emptySink("end", LiteTestScenarioRunner.sinkName, "value" -> "#out1")
 
 
-    val runner = LiteTestScenarioRunner(Nil, ConfigFactory.empty())
+    val runner = TestScenarioRunner.liteBased().build()
 
     val results = runner.runWithData[SimpleInput, String](scenario, inputData)
 
@@ -36,4 +39,5 @@ class SampleComponentProviderLiteTest extends Matchers with ValidatedValuesDetai
       case (generated, expectedLength) => generated should have length expectedLength
     }
   }
+
 }

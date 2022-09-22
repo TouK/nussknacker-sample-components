@@ -17,7 +17,7 @@ var nussknackerVersion: String by extra
 ext {
     val versionFromEnv = System.getenv()["NUSSKNACKER_VERSION"]
     if (versionFromEnv.isNullOrBlank()) {
-        nussknackerVersion = File("./nussknacker.version").readText(Charsets.UTF_8)
+        nussknackerVersion = File("./nussknacker.version").readText(Charsets.UTF_8).trim()
     } else {
         nussknackerVersion = versionFromEnv
     }
