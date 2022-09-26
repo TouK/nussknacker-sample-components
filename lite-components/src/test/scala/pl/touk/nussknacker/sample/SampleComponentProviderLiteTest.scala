@@ -24,9 +24,9 @@ class SampleComponentProviderLiteTest extends Matchers with ValidatedValuesDetai
     val scenario =
       ScenarioBuilder
         .streamingLite("sample_notification")
-        .source("custom-source-node-name", LiteTestScenarioRunner.sourceName)
+        .source("custom-source-node-name", TestScenarioRunner.testDataSource)
         .enricher("component-provider-service-node-name", "out1", "randomString", "length" -> "#input.length")
-        .emptySink("end", LiteTestScenarioRunner.sinkName, "value" -> "#out1")
+        .emptySink("end", TestScenarioRunner.testResultSink, "value" -> "#out1")
 
 
     val runner = TestScenarioRunner.liteBased().build()

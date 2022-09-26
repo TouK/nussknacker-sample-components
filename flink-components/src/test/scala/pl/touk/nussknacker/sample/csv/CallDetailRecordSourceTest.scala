@@ -1,21 +1,26 @@
 package pl.touk.nussknacker.sample.csv
 
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.Test
 import org.scalatest.Inside.inside
-import org.scalatest.Matchers
-import org.scalatestplus.junit.JUnitRunner
+import org.scalatest.matchers.should.Matchers
+import pl.touk.nussknacker.engine.api.context.ProcessCompilationError.CustomNodeError
 import pl.touk.nussknacker.engine.build.ScenarioBuilder
+import pl.touk.nussknacker.engine.flink.util.test.FlinkTestScenarioRunner._
 import pl.touk.nussknacker.engine.spel.Implicits.asSpelExpression
-import pl.touk.nussknacker.sample.BaseSourceTest
+import pl.touk.nussknacker.engine.util.test.TestScenarioRunner
+import pl.touk.nussknacker.sample.FlinkSampleComponentsBaseClassTest
+import pl.touk.nussknacker.test.ValidatedValuesDetailedMessage
 
 import java.nio.file.Files
 import java.time.Duration
 import scala.collection.JavaConverters._
 
-@RunWith(classOf[JUnitRunner])
-class CallDetailRecordSourceTest extends BaseSourceTest with Matchers  {
+class CallDetailRecordSourceTest extends Matchers with ValidatedValuesDetailedMessage {
 
-  test("should read CDR records") {
+  import CallDetailRecordSourceTest._
+
+  @Test
+  def shouldReadCdrRecords(): Unit = {
     val cdrsFile = Files.createTempFile("cdr", ".csv")
     cdrsFile.toFile.deleteOnExit()
     val cdrs = List(
@@ -26,13 +31,14 @@ class CallDetailRecordSourceTest extends BaseSourceTest with Matchers  {
     val scenario = ScenarioBuilder
       .streaming("test scenario")
       .source("cdr source", "cdr", "fileName" -> s"'${cdrsFile.getFileName.toString}'")
-      .processorEnd("end", "invocationCollector", "value" -> "#input")
-    registerScenario(scenario)
+      .processorEnd("end", TestScenarioRunner.testResultService, "value" -> "#input")
+    val runner = TestScenarioRunner
+      .flinkBased(config, flinkMiniCluster)
+      .build()
 
-    env.executeAndWaitForFinished(scenario.id)()
+    val results = runner.runWithoutData[CallDetailRecord](scenario).validValue
 
-    val results = invocationCollectorResults[CallDetailRecord]()
-    inside(results) {
+    inside(results.successes) {
       case cdr1 :: cdr2 :: Nil =>
         cdr1.phoneNumberA shouldBe "48111111111"
         cdr1.phoneNumberB shouldBe "48111111112"
@@ -45,14 +51,20 @@ class CallDetailRecordSourceTest extends BaseSourceTest with Matchers  {
     }
   }
 
-  test("should throw on non readable file") {
+  @Test
+  def shouldThrowOnNonReadableFile(): Unit = {
     val scenario = ScenarioBuilder
       .streaming("test scenario")
       .source("cdr source", "cdr", "fileName" -> s"'unexisting.csv'")
-      .processorEnd("end", "invocationCollector", "value" -> "#input")
+      .processorEnd("end", TestScenarioRunner.testResultService, "value" -> "#input")
+    val runner = TestScenarioRunner
+      .flinkBased(config, flinkMiniCluster)
+      .build()
 
-    intercept[IllegalArgumentException] {
-      registerScenario(scenario)
-    }.getMessage should (include ("Compilation errors:") and include ("unexisting.csv") and include ("is not readable"))
+    val compilationErrors = runner.runWithoutData[CallDetailRecord](scenario).invalidValue.toList
+
+    compilationErrors should contain only CustomNodeError("cdr source", "File: '/tmp/unexisting.csv' is not readable", Some("fileName"))
   }
 }
+
+object CallDetailRecordSourceTest extends FlinkSampleComponentsBaseClassTest

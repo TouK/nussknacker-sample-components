@@ -1,21 +1,27 @@
 package pl.touk.nussknacker.sample.csv
 
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.Test
 import org.scalatest.Inside.inside
-import org.scalatest.Matchers
-import org.scalatestplus.junit.JUnitRunner
+import org.scalatest.matchers.should.Matchers
+import pl.touk.nussknacker.engine.api.context.ProcessCompilationError
+import pl.touk.nussknacker.engine.api.context.ProcessCompilationError.CustomNodeError
 import pl.touk.nussknacker.engine.build.ScenarioBuilder
+import pl.touk.nussknacker.engine.flink.util.test.FlinkTestScenarioRunner._
 import pl.touk.nussknacker.engine.graph.expression.Expression
 import pl.touk.nussknacker.engine.spel.Implicits.asSpelExpression
-import pl.touk.nussknacker.sample.BaseSourceTest
+import pl.touk.nussknacker.engine.util.test.TestScenarioRunner
+import pl.touk.nussknacker.sample.FlinkSampleComponentsBaseClassTest
+import pl.touk.nussknacker.test.ValidatedValuesDetailedMessage
 
 import java.nio.file.Files
 import scala.collection.JavaConverters._
 
-@RunWith(classOf[JUnitRunner])
-class CsvSourceTest extends BaseSourceTest with Matchers {
+class CsvSourceTest extends Matchers with ValidatedValuesDetailedMessage {
 
-  test("should read CSV according to definition") {
+  import CsvSourceTest._
+
+  @Test
+  def shouldReadCSVAccordingToTheDefinition(): Unit = {
     val csvFile = Files.createTempFile("test", ".csv")
     csvFile.toFile.deleteOnExit()
     val rows = List(
@@ -26,13 +32,14 @@ class CsvSourceTest extends BaseSourceTest with Matchers {
     val scenario = ScenarioBuilder
       .streaming("test scenario")
       .source("source", "csvSource", "fileName" -> s"'${csvFile.getFileName.toString}'", "definition" -> "{{'name', 'String'}, {'phoneNumber', 'Long'}}")
-      .processorEnd("end", "invocationCollector", "value" -> "#input")
-    registerScenario(scenario)
+      .processorEnd("end", TestScenarioRunner.testResultService, "value" -> "#input")
+    val runner = TestScenarioRunner
+      .flinkBased(config, flinkMiniCluster)
+      .build()
 
-    env.executeAndWaitForFinished(scenario.id)()
+    val results = runner.runWithoutData[java.util.Map[String, Any]](scenario).validValue
 
-    val results = invocationCollectorResults[java.util.Map[String, Any]]()
-    inside(results) {
+    inside(results.successes) {
       case row1 :: row2 :: Nil =>
         row1.get("name") shouldBe a[String]
         row1.get("name") shouldBe "Alice"
@@ -43,33 +50,40 @@ class CsvSourceTest extends BaseSourceTest with Matchers {
     }
   }
 
-  test("should throw on non readable file") {
-    testCompilationErrors("fileName" -> "'unexisting.csv'", "definition" -> "{{'name', 'String'}, {'phoneNumber', 'Long'}}")
-      .getMessage should (include("Compilation errors:") and include("unexisting.csv") and include("is not readable"))
+  @Test
+  def shouldThrowOnNonReadableFile(): Unit = {
+    testCompilationErrors("fileName" -> "'unexisting.csv'", "definition" -> "{{'name', 'String'}, {'phoneNumber', 'Long'}}") should
+      contain (CustomNodeError("source", "File: 'unexisting.csv' is not readable", Some("fileName")))
   }
 
-  test("should throw on malformed definition") {
+  @Test
+  def shouldThrowOnMalformedDefinition(): Unit = {
     val emptyFile = Files.createTempFile("test", ".csv")
     emptyFile.toFile.deleteOnExit()
-    testCompilationErrors("fileName" -> s"'${emptyFile.getFileName.toString}'", "definition" -> "{{'name', 'String'}, {'phoneNumber'}}")
-      .getMessage should include ("Column 2 should have name and type")
+    testCompilationErrors("fileName" -> s"'${emptyFile.getFileName.toString}'", "definition" -> "{{'name', 'String'}, {'phoneNumber'}}") should
+      contain (CustomNodeError("source", "Column 2 should have name and type", Some("definition")))
   }
 
-  test("should throw on unknown type") {
+  @Test
+  def shouldThrowOnUnknownType(): Unit = {
     val emptyFile = Files.createTempFile("test", ".csv")
     emptyFile.toFile.deleteOnExit()
-    testCompilationErrors("fileName" -> s"'${emptyFile.getFileName.toString}'", "definition" -> "{{'name', 'String'}, {'phoneNumber', 'Integer'}, {'callDuration', 'java.time.Duration'}}")
-      .getMessage should (include("Type for column 'phoneNumber' is not supported") and include("Type for column 'callDuration' is not supported"))
+    testCompilationErrors("fileName" -> s"'${emptyFile.getFileName.toString}'", "definition" -> "{{'name', 'String'}, {'phoneNumber', 'Integer'}, {'callDuration', 'java.time.Duration'}}") should
+      contain allOf(
+      CustomNodeError("source", "Type for column 'phoneNumber' is not supported", Some("definition")),
+      CustomNodeError("source", "Type for column 'callDuration' is not supported", Some("definition")))
   }
 
-  private def testCompilationErrors(params: (String, Expression)*): Exception = {
+  private def testCompilationErrors(params: (String, Expression)*): List[ProcessCompilationError] = {
     val scenario = ScenarioBuilder
       .streaming("test scenario")
       .source("source", "csvSource", params: _*)
-      .processorEnd("end", "invocationCollector", "value" -> "#input")
-
-    intercept[IllegalArgumentException] {
-      registerScenario(scenario)
-    }
+      .processorEnd("end", TestScenarioRunner.testResultService, "value" -> "#input")
+    val runner = TestScenarioRunner
+      .flinkBased(config, flinkMiniCluster)
+      .build()
+    runner.runWithoutData[java.util.Map[String, Any]](scenario).invalidValue.toList
   }
 }
+
+object CsvSourceTest extends FlinkSampleComponentsBaseClassTest
