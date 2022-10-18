@@ -1,21 +1,22 @@
 package pl.touk.nussknacker.sample
 
 import com.typesafe.config.ConfigFactory
-import org.junit.runner.RunWith
-import org.scalatest.{FunSuite, Matchers}
-import org.scalatestplus.junit.JUnitRunner
+import org.junit.jupiter.api.Test
+import org.scalatest.matchers.should.Matchers
 import pl.touk.nussknacker.engine.build.ScenarioBuilder
 import pl.touk.nussknacker.engine.lite.util.test.LiteTestScenarioRunner
-import pl.touk.nussknacker.test.ValidatedValuesDetailedMessage
 import pl.touk.nussknacker.engine.spel.Implicits._
+import pl.touk.nussknacker.engine.util.test.TestScenarioRunner
+import pl.touk.nussknacker.test.ValidatedValuesDetailedMessage
 
-//to run scalatest with gradle use JUnitRunner
-@RunWith(classOf[JUnitRunner])
-class SampleComponentProviderLiteTest extends FunSuite with Matchers with ValidatedValuesDetailedMessage {
+class SampleComponentProviderLiteTest extends Matchers with ValidatedValuesDetailedMessage {
+
+  import LiteTestScenarioRunner._
 
   private case class SimpleInput(length: Int)
 
-  test("should test sample component provider on lite interpreter") {
+  @Test
+  def testSampleComponentProviderWithLiteInterpreter(): Unit = {
 
     val totalLength = 5
     val inputData = (0 until totalLength).map(SimpleInput(_: Int)).toList
@@ -23,18 +24,20 @@ class SampleComponentProviderLiteTest extends FunSuite with Matchers with Valida
     val scenario =
       ScenarioBuilder
         .streamingLite("sample_notification")
-        .source("custom-source-node-name", LiteTestScenarioRunner.sourceName)
+        .source("custom-source-node-name", TestScenarioRunner.testDataSource)
         .enricher("component-provider-service-node-name", "out1", "randomString", "length" -> "#input.length")
-        .emptySink("end", LiteTestScenarioRunner.sinkName, "value" -> "#out1")
+        .emptySink("end", TestScenarioRunner.testResultSink, "value" -> "#out1")
 
 
-    val runner = LiteTestScenarioRunner(Nil, ConfigFactory.empty())
+    val runner = TestScenarioRunner.liteBased().build()
 
-    val results = runner.runWithData[SimpleInput, String](scenario, inputData).validValue
+    val results = runner.runWithData[SimpleInput, String](scenario, inputData)
 
-    results.successes should have length totalLength
-    results.successes.zipWithIndex.foreach {
+    val validResults = results.validValue
+    validResults.successes should have length totalLength
+    validResults.successes.zipWithIndex.foreach {
       case (generated, expectedLength) => generated should have length expectedLength
     }
   }
+
 }
