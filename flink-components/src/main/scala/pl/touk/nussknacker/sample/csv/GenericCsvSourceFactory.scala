@@ -4,6 +4,7 @@ import cats.data.{Validated, ValidatedNel}
 import cats.syntax.apply._
 import cats.syntax.traverse._
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner
+import org.apache.flink.api.common.typeinfo.TypeInformation
 import pl.touk.nussknacker.engine.api.NodeId
 import pl.touk.nussknacker.engine.api.context.ProcessCompilationError.CustomNodeError
 import pl.touk.nussknacker.engine.api.context.transformation.{DefinedEagerParameter, NodeDependencyValue, SingleInputGenericNodeTransformation}
@@ -56,14 +57,14 @@ class GenericCsvSourceFactory(filesDir: String, separator: Char) extends SourceF
   }
 
   override def implementation(params: Map[String, Any], dependencies: List[NodeDependencyValue], finalState: Option[State]): Source = {
-    import org.apache.flink.api.scala.createTypeInformation
     val fileName = FileNameParameter.extractValue(params)
     val file = new File(filesDir, fileName)
     val definition = DefinitionParameter.extractValue(params)
     // For each event, current time is assigned. We could also add a parameter with timestamp column name and assign timestamps
     // based on the given column value.
     val assignProcessingTime: SerializableTimestampAssigner[TypedMap] = toAssigner(_ => System.currentTimeMillis())
-    new CsvSource[TypedMap](file, separator, createRecordFunction(definition), assignProcessingTime)
+    //TODO: what should be here
+    new CsvSource[TypedMap](file, separator, createRecordFunction(definition), assignProcessingTime) (TypeInformation.of(classOf[TypedMap]))
   }
 
   override def nodeDependencies: List[NodeDependency] = Nil
