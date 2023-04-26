@@ -28,7 +28,7 @@ dependencies {
     compileOnly("pl.touk.nussknacker:nussknacker-components-utils_2.12")
     compileOnly("pl.touk.nussknacker:nussknacker-flink-components-api_2.12")
     compileOnly("pl.touk.nussknacker:nussknacker-flink-components-utils_2.12")
-    compileOnly("org.apache.flink:flink-streaming-scala_2.12")
+    compileOnly("org.apache.flink:flink-streaming-java")
     testImplementation("org.scala-lang:scala-library")
     testImplementation("pl.touk.nussknacker:nussknacker-flink-components-testkit_2.12")
 
