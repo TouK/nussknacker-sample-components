@@ -3,10 +3,12 @@ package pl.touk.nussknacker.sample
 import org.junit.jupiter.api.Test
 import org.scalatest.Inside.inside
 import org.scalatest.matchers.should.Matchers
+import pl.touk.nussknacker.engine.api.component.ComponentDefinition
 import pl.touk.nussknacker.engine.build.ScenarioBuilder
 import pl.touk.nussknacker.engine.flink.util.test.FlinkTestScenarioRunner._
 import pl.touk.nussknacker.engine.spel.Implicits._
 import pl.touk.nussknacker.engine.util.test.TestScenarioRunner
+import pl.touk.nussknacker.sample.csv.{CallDetailRecordSourceFactory, CsvSinkFactory, GenericCsvSourceFactory}
 import pl.touk.nussknacker.test.ValidatedValuesDetailedMessage
 
 class SampleComponentProviderTest extends Matchers with ValidatedValuesDetailedMessage {
@@ -23,6 +25,7 @@ class SampleComponentProviderTest extends Matchers with ValidatedValuesDetailedM
 
     val runner = TestScenarioRunner
       .flinkBased(config, flinkMiniCluster)
+      .withExtraComponents(ComponentDefinition("randomString", new RandomStringProvider) :: Nil)
       .build()
 
     val length = 5
