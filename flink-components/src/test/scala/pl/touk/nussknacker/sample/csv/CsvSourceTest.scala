@@ -3,6 +3,7 @@ package pl.touk.nussknacker.sample.csv
 import org.junit.jupiter.api.Test
 import org.scalatest.Inside.inside
 import org.scalatest.matchers.should.Matchers
+import pl.touk.nussknacker.engine.api.component.ComponentDefinition
 import pl.touk.nussknacker.engine.api.context.ProcessCompilationError
 import pl.touk.nussknacker.engine.api.context.ProcessCompilationError.CustomNodeError
 import pl.touk.nussknacker.engine.build.ScenarioBuilder
@@ -35,6 +36,7 @@ class CsvSourceTest extends Matchers with ValidatedValuesDetailedMessage {
       .processorEnd("end", TestScenarioRunner.testResultService, "value" -> "#input")
     val runner = TestScenarioRunner
       .flinkBased(config, flinkMiniCluster)
+      .withExtraComponents(ComponentDefinition("csvSource", new GenericCsvSourceFactory(csvFile.getParent.toString, ';')) :: Nil)
       .build()
 
     val results = runner.runWithoutData[java.util.Map[String, Any]](scenario).validValue
@@ -81,6 +83,7 @@ class CsvSourceTest extends Matchers with ValidatedValuesDetailedMessage {
       .processorEnd("end", TestScenarioRunner.testResultService, "value" -> "#input")
     val runner = TestScenarioRunner
       .flinkBased(config, flinkMiniCluster)
+      .withExtraComponents(ComponentDefinition("csvSource", new GenericCsvSourceFactory("/tmp", ';')) :: Nil)
       .build()
     runner.runWithoutData[java.util.Map[String, Any]](scenario).invalidValue.toList
   }

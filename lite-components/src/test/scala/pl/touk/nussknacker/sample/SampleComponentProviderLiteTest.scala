@@ -3,6 +3,7 @@ package pl.touk.nussknacker.sample
 import com.typesafe.config.ConfigFactory
 import org.junit.jupiter.api.Test
 import org.scalatest.matchers.should.Matchers
+import pl.touk.nussknacker.engine.api.component.ComponentDefinition
 import pl.touk.nussknacker.engine.build.ScenarioBuilder
 import pl.touk.nussknacker.engine.lite.util.test.LiteTestScenarioRunner
 import pl.touk.nussknacker.engine.spel.Implicits._
@@ -29,7 +30,10 @@ class SampleComponentProviderLiteTest extends Matchers with ValidatedValuesDetai
         .emptySink("end", TestScenarioRunner.testResultSink, "value" -> "#out1")
 
 
-    val runner = TestScenarioRunner.liteBased().build()
+    val runner = TestScenarioRunner
+      .liteBased()
+      .withExtraComponents(ComponentDefinition("randomString", new RandomStringProvider) :: Nil)
+      .build()
 
     val results = runner.runWithData[SimpleInput, String](scenario, inputData)
 
