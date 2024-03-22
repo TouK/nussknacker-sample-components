@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test
 import org.scalatest.Inside.inside
 import org.scalatest.matchers.should.Matchers
 import pl.touk.nussknacker.engine.api.context.ProcessCompilationError.CustomNodeError
+import pl.touk.nussknacker.engine.api.component.ComponentDefinition
+import pl.touk.nussknacker.engine.api.parameter.ParameterName
 import pl.touk.nussknacker.engine.build.ScenarioBuilder
 import pl.touk.nussknacker.engine.flink.util.test.FlinkTestScenarioRunner._
 import pl.touk.nussknacker.engine.spel.Implicits.asSpelExpression
@@ -34,6 +36,7 @@ class CallDetailRecordSourceTest extends Matchers with ValidatedValuesDetailedMe
       .processorEnd("end", TestScenarioRunner.testResultService, "value" -> "#input")
     val runner = TestScenarioRunner
       .flinkBased(config, flinkMiniCluster)
+      .withExtraComponents(ComponentDefinition("cdr", CallDetailRecordSourceFactory.prepare(cdrsFile.getParent.toString, ';')) :: Nil)
       .build()
 
     val results = runner.runWithoutData[CallDetailRecord](scenario).validValue
@@ -59,11 +62,12 @@ class CallDetailRecordSourceTest extends Matchers with ValidatedValuesDetailedMe
       .processorEnd("end", TestScenarioRunner.testResultService, "value" -> "#input")
     val runner = TestScenarioRunner
       .flinkBased(config, flinkMiniCluster)
+      .withExtraComponents(ComponentDefinition("cdr", CallDetailRecordSourceFactory.prepare("/tmp", ';')) :: Nil)
       .build()
 
     val compilationErrors = runner.runWithoutData[CallDetailRecord](scenario).invalidValue.toList
 
-    compilationErrors should contain only CustomNodeError("cdr source", "File: '/tmp/unexisting.csv' is not readable", Some("fileName"))
+    compilationErrors should contain only CustomNodeError("cdr source", "File: '/tmp/unexisting.csv' is not readable", Some(ParameterName("fileName")))
   }
 }
 
