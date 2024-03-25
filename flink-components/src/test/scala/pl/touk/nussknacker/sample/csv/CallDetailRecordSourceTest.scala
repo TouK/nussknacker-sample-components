@@ -3,6 +3,7 @@ package pl.touk.nussknacker.sample.csv
 import org.junit.jupiter.api.Test
 import org.scalatest.Inside.inside
 import org.scalatest.matchers.should.Matchers
+import pl.touk.nussknacker.engine.api.component.ComponentDefinition
 import pl.touk.nussknacker.engine.api.context.ProcessCompilationError.CustomNodeError
 import pl.touk.nussknacker.engine.api.component.ComponentDefinition
 import pl.touk.nussknacker.engine.api.parameter.ParameterName
