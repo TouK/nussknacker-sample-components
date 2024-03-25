@@ -3,8 +3,10 @@ package pl.touk.nussknacker.sample.csv
 import org.junit.jupiter.api.Test
 import org.scalatest.Inside.inside
 import org.scalatest.matchers.should.Matchers
+import pl.touk.nussknacker.engine.api.component.ComponentDefinition
 import pl.touk.nussknacker.engine.api.context.ProcessCompilationError
 import pl.touk.nussknacker.engine.api.context.ProcessCompilationError.CustomNodeError
+import pl.touk.nussknacker.engine.api.parameter.ParameterName
 import pl.touk.nussknacker.engine.build.ScenarioBuilder
 import pl.touk.nussknacker.engine.flink.util.test.FlinkTestScenarioRunner._
 import pl.touk.nussknacker.engine.graph.expression.Expression
@@ -35,6 +37,7 @@ class CsvSourceTest extends Matchers with ValidatedValuesDetailedMessage {
       .processorEnd("end", TestScenarioRunner.testResultService, "value" -> "#input")
     val runner = TestScenarioRunner
       .flinkBased(config, flinkMiniCluster)
+      .withExtraComponents(ComponentDefinition("csvSource", new GenericCsvSourceFactory(csvFile.getParent.toString, ';')) :: Nil)
       .build()
 
     val results = runner.runWithoutData[java.util.Map[String, Any]](scenario).validValue
@@ -53,7 +56,7 @@ class CsvSourceTest extends Matchers with ValidatedValuesDetailedMessage {
   @Test
   def shouldThrowOnNonReadableFile(): Unit = {
     testCompilationErrors("fileName" -> "'unexisting.csv'", "definition" -> "{{'name', 'String'}, {'phoneNumber', 'Long'}}") should
-      contain (CustomNodeError("source", "File: 'unexisting.csv' is not readable", Some("fileName")))
+      contain (CustomNodeError("source", "File: 'unexisting.csv' is not readable", Some(ParameterName("fileName"))))
   }
 
   @Test
@@ -61,7 +64,7 @@ class CsvSourceTest extends Matchers with ValidatedValuesDetailedMessage {
     val emptyFile = Files.createTempFile("test", ".csv")
     emptyFile.toFile.deleteOnExit()
     testCompilationErrors("fileName" -> s"'${emptyFile.getFileName.toString}'", "definition" -> "{{'name', 'String'}, {'phoneNumber'}}") should
-      contain (CustomNodeError("source", "Column 2 should have name and type", Some("definition")))
+      contain (CustomNodeError("source", "Column 2 should have name and type", Some(ParameterName("definition"))))
   }
 
   @Test
@@ -70,8 +73,8 @@ class CsvSourceTest extends Matchers with ValidatedValuesDetailedMessage {
     emptyFile.toFile.deleteOnExit()
     testCompilationErrors("fileName" -> s"'${emptyFile.getFileName.toString}'", "definition" -> "{{'name', 'String'}, {'phoneNumber', 'Integer'}, {'callDuration', 'java.time.Duration'}}") should
       contain allOf(
-      CustomNodeError("source", "Type for column 'phoneNumber' is not supported", Some("definition")),
-      CustomNodeError("source", "Type for column 'callDuration' is not supported", Some("definition")))
+      CustomNodeError("source", "Type for column 'phoneNumber' is not supported", Some(ParameterName("definition"))),
+      CustomNodeError("source", "Type for column 'callDuration' is not supported", Some(ParameterName("definition"))))
   }
 
   private def testCompilationErrors(params: (String, Expression)*): List[ProcessCompilationError] = {
@@ -81,6 +84,7 @@ class CsvSourceTest extends Matchers with ValidatedValuesDetailedMessage {
       .processorEnd("end", TestScenarioRunner.testResultService, "value" -> "#input")
     val runner = TestScenarioRunner
       .flinkBased(config, flinkMiniCluster)
+      .withExtraComponents(ComponentDefinition("csvSource", new GenericCsvSourceFactory("/tmp", ';')) :: Nil)
       .build()
     runner.runWithoutData[java.util.Map[String, Any]](scenario).invalidValue.toList
   }

@@ -2,6 +2,7 @@ package pl.touk.nussknacker.sample.csv
 
 import org.junit.jupiter.api.Test
 import org.scalatest.matchers.should.Matchers
+import pl.touk.nussknacker.engine.api.component.ComponentDefinition
 import pl.touk.nussknacker.engine.build.ScenarioBuilder
 import pl.touk.nussknacker.engine.flink.util.test.FlinkTestScenarioRunner._
 import pl.touk.nussknacker.engine.spel.Implicits.asSpelExpression
@@ -25,6 +26,7 @@ class CsvSinkTest extends Matchers {
       .emptySink("end", "csvSink", "fileName" -> s"'${resultsFile.getFileName.toFile}'",  "row" -> "{#input, 'const'}")
     val runner = TestScenarioRunner
       .flinkBased(config, flinkMiniCluster)
+      .withExtraComponents(ComponentDefinition("csvSink", new CsvSinkFactory(resultsFile.getParent.toString, ';')) :: Nil)
       .build()
 
     runner.runWithDataIgnoringResults(scenario, List("first", "second"))
