@@ -1,6 +1,5 @@
 package pl.touk.nussknacker.sample
 
-import com.typesafe.config.ConfigFactory
 import org.junit.jupiter.api.Test
 import org.scalatest.matchers.should.Matchers
 import pl.touk.nussknacker.engine.api.component.ComponentDefinition
