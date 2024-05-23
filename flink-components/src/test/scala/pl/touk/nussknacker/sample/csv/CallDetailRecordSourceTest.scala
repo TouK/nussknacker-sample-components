@@ -3,8 +3,8 @@ package pl.touk.nussknacker.sample.csv
 import org.junit.jupiter.api.Test
 import org.scalatest.Inside.inside
 import org.scalatest.matchers.should.Matchers
-import pl.touk.nussknacker.engine.api.context.ProcessCompilationError.CustomNodeError
 import pl.touk.nussknacker.engine.api.component.ComponentDefinition
+import pl.touk.nussknacker.engine.api.context.ProcessCompilationError.CustomNodeError
 import pl.touk.nussknacker.engine.api.parameter.ParameterName
 import pl.touk.nussknacker.engine.build.ScenarioBuilder
 import pl.touk.nussknacker.engine.flink.util.test.FlinkTestScenarioRunner._
@@ -33,7 +33,7 @@ class CallDetailRecordSourceTest extends Matchers with ValidatedValuesDetailedMe
     val scenario = ScenarioBuilder
       .streaming("test scenario")
       .source("cdr source", "cdr", "fileName" -> s"'${cdrsFile.getFileName.toString}'")
-      .processorEnd("end", TestScenarioRunner.testResultService, "value" -> "#input")
+      .emptySink("end", TestScenarioRunner.testResultSink, "value" -> "#input")
     val runner = TestScenarioRunner
       .flinkBased(config, flinkMiniCluster)
       .withExtraComponents(ComponentDefinition("cdr", CallDetailRecordSourceFactory.prepare(cdrsFile.getParent.toString, ';')) :: Nil)
@@ -59,7 +59,7 @@ class CallDetailRecordSourceTest extends Matchers with ValidatedValuesDetailedMe
     val scenario = ScenarioBuilder
       .streaming("test scenario")
       .source("cdr source", "cdr", "fileName" -> s"'unexisting.csv'")
-      .processorEnd("end", TestScenarioRunner.testResultService, "value" -> "#input")
+      .emptySink("end", TestScenarioRunner.testResultSink, "value" -> "#input")
     val runner = TestScenarioRunner
       .flinkBased(config, flinkMiniCluster)
       .withExtraComponents(ComponentDefinition("cdr", CallDetailRecordSourceFactory.prepare("/tmp", ';')) :: Nil)
