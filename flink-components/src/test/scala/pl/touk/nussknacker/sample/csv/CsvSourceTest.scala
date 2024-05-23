@@ -34,7 +34,7 @@ class CsvSourceTest extends Matchers with ValidatedValuesDetailedMessage {
     val scenario = ScenarioBuilder
       .streaming("test scenario")
       .source("source", "csvSource", "fileName" -> s"'${csvFile.getFileName.toString}'", "definition" -> "{{'name', 'String'}, {'phoneNumber', 'Long'}}")
-      .processorEnd("end", TestScenarioRunner.testResultService, "value" -> "#input")
+      .emptySink("end", TestScenarioRunner.testResultSink, "value" -> "#input")
     val runner = TestScenarioRunner
       .flinkBased(config, flinkMiniCluster)
       .withExtraComponents(ComponentDefinition("csvSource", new GenericCsvSourceFactory(csvFile.getParent.toString, ';')) :: Nil)
@@ -81,7 +81,7 @@ class CsvSourceTest extends Matchers with ValidatedValuesDetailedMessage {
     val scenario = ScenarioBuilder
       .streaming("test scenario")
       .source("source", "csvSource", params: _*)
-      .processorEnd("end", TestScenarioRunner.testResultService, "value" -> "#input")
+      .emptySink("end", TestScenarioRunner.testResultSink, "value" -> "#input")
     val runner = TestScenarioRunner
       .flinkBased(config, flinkMiniCluster)
       .withExtraComponents(ComponentDefinition("csvSource", new GenericCsvSourceFactory("/tmp", ';')) :: Nil)
