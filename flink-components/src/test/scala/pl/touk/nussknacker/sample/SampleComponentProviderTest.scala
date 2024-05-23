@@ -20,7 +20,7 @@ class SampleComponentProviderTest extends Matchers with ValidatedValuesDetailedM
       .streaming("test scenario")
       .source("custom-source-node-name", TestScenarioRunner.testDataSource)
       .enricher("component-provider-service-node-name", "output", "randomString", "length" -> "#input")
-      .processorEnd("end", TestScenarioRunner.testResultService, "value" -> "#output")
+      .emptySink("end", TestScenarioRunner.testResultSink, "value" -> "#output")
 
     val runner = TestScenarioRunner
       .flinkBased(config, flinkMiniCluster)
