@@ -10,7 +10,7 @@ import pl.touk.nussknacker.engine.api.parameter.ParameterName
 import pl.touk.nussknacker.engine.build.ScenarioBuilder
 import pl.touk.nussknacker.engine.flink.util.test.FlinkTestScenarioRunner._
 import pl.touk.nussknacker.engine.graph.expression.Expression
-import pl.touk.nussknacker.engine.spel.Implicits.asSpelExpression
+import pl.touk.nussknacker.engine.spel.SpelExtension._
 import pl.touk.nussknacker.engine.util.test.TestScenarioRunner
 import pl.touk.nussknacker.sample.FlinkSampleComponentsBaseClassTest
 import pl.touk.nussknacker.test.ValidatedValuesDetailedMessage
@@ -33,8 +33,8 @@ class CsvSourceTest extends Matchers with ValidatedValuesDetailedMessage {
     Files.write(csvFile, rows.asJava)
     val scenario = ScenarioBuilder
       .streaming("test scenario")
-      .source("source", "csvSource", "fileName" -> s"'${csvFile.getFileName.toString}'", "definition" -> "{{'name', 'String'}, {'phoneNumber', 'Long'}}")
-      .emptySink("end", TestScenarioRunner.testResultSink, "value" -> "#input")
+      .source("source", "csvSource", "fileName" -> s"'${csvFile.getFileName.toString}'".spel, "definition" -> "{{'name', 'String'}, {'phoneNumber', 'Long'}}".spel)
+      .emptySink("end", TestScenarioRunner.testResultSink, "value" -> "#input".spel)
     val runner = TestScenarioRunner
       .flinkBased(config, flinkMiniCluster)
       .withExtraComponents(ComponentDefinition("csvSource", new GenericCsvSourceFactory(csvFile.getParent.toString, ';')) :: Nil)
@@ -55,7 +55,7 @@ class CsvSourceTest extends Matchers with ValidatedValuesDetailedMessage {
 
   @Test
   def shouldThrowOnNonReadableFile(): Unit = {
-    testCompilationErrors("fileName" -> "'unexisting.csv'", "definition" -> "{{'name', 'String'}, {'phoneNumber', 'Long'}}") should
+    testCompilationErrors("fileName" -> "'unexisting.csv'".spel, "definition" -> "{{'name', 'String'}, {'phoneNumber', 'Long'}}".spel) should
       contain (CustomNodeError("source", "File: 'unexisting.csv' is not readable", Some(ParameterName("fileName"))))
   }
 
@@ -63,7 +63,7 @@ class CsvSourceTest extends Matchers with ValidatedValuesDetailedMessage {
   def shouldThrowOnMalformedDefinition(): Unit = {
     val emptyFile = Files.createTempFile("test", ".csv")
     emptyFile.toFile.deleteOnExit()
-    testCompilationErrors("fileName" -> s"'${emptyFile.getFileName.toString}'", "definition" -> "{{'name', 'String'}, {'phoneNumber'}}") should
+    testCompilationErrors("fileName" -> s"'${emptyFile.getFileName.toString}'".spel, "definition" -> "{{'name', 'String'}, {'phoneNumber'}}".spel) should
       contain (CustomNodeError("source", "Column 2 should have name and type", Some(ParameterName("definition"))))
   }
 
@@ -71,7 +71,7 @@ class CsvSourceTest extends Matchers with ValidatedValuesDetailedMessage {
   def shouldThrowOnUnknownType(): Unit = {
     val emptyFile = Files.createTempFile("test", ".csv")
     emptyFile.toFile.deleteOnExit()
-    testCompilationErrors("fileName" -> s"'${emptyFile.getFileName.toString}'", "definition" -> "{{'name', 'String'}, {'phoneNumber', 'Integer'}, {'callDuration', 'java.time.Duration'}}") should
+    testCompilationErrors("fileName" -> s"'${emptyFile.getFileName.toString}'".spel, "definition" -> "{{'name', 'String'}, {'phoneNumber', 'Integer'}, {'callDuration', 'java.time.Duration'}}".spel) should
       contain allOf(
       CustomNodeError("source", "Type for column 'phoneNumber' is not supported", Some(ParameterName("definition"))),
       CustomNodeError("source", "Type for column 'callDuration' is not supported", Some(ParameterName("definition"))))
@@ -81,7 +81,7 @@ class CsvSourceTest extends Matchers with ValidatedValuesDetailedMessage {
     val scenario = ScenarioBuilder
       .streaming("test scenario")
       .source("source", "csvSource", params: _*)
-      .emptySink("end", TestScenarioRunner.testResultSink, "value" -> "#input")
+      .emptySink("end", TestScenarioRunner.testResultSink, "value" -> "#input".spel)
     val runner = TestScenarioRunner
       .flinkBased(config, flinkMiniCluster)
       .withExtraComponents(ComponentDefinition("csvSource", new GenericCsvSourceFactory("/tmp", ';')) :: Nil)
