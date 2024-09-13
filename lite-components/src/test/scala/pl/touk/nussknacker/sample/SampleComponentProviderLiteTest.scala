@@ -5,7 +5,7 @@ import org.scalatest.matchers.should.Matchers
 import pl.touk.nussknacker.engine.api.component.ComponentDefinition
 import pl.touk.nussknacker.engine.build.ScenarioBuilder
 import pl.touk.nussknacker.engine.lite.util.test.LiteTestScenarioRunner
-import pl.touk.nussknacker.engine.spel.Implicits._
+import pl.touk.nussknacker.engine.spel.SpelExtension._
 import pl.touk.nussknacker.engine.util.test.TestScenarioRunner
 import pl.touk.nussknacker.test.ValidatedValuesDetailedMessage
 
@@ -25,8 +25,8 @@ class SampleComponentProviderLiteTest extends Matchers with ValidatedValuesDetai
       ScenarioBuilder
         .streamingLite("sample_notification")
         .source("custom-source-node-name", TestScenarioRunner.testDataSource)
-        .enricher("component-provider-service-node-name", "out1", "randomString", "length" -> "#input.length")
-        .emptySink("end", TestScenarioRunner.testResultSink, "value" -> "#out1")
+        .enricher("component-provider-service-node-name", "out1", "randomString", "length" -> "#input.length".spel)
+        .emptySink("end", TestScenarioRunner.testResultSink, "value" -> "#out1".spel)
 
 
     val runner = TestScenarioRunner
