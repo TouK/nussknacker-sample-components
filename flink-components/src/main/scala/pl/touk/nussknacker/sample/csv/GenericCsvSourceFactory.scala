@@ -101,7 +101,7 @@ class GenericCsvSourceFactory(filesDir: String, separator: Char) extends SourceF
         (name, typingResult),
         CustomNodeError(s"Type for column '$name' is not supported", Some(DefinitionParameterDeclaration.parameterName))
       )
-    }.toList.sequence.map(TypedObjectTypingResult(_))
+    }.toList.sequence.map(Typed.record(_))
   }
 
   private def createRecordFunction(definition: java.util.List[java.util.List[String]]): Array[String] => TypedMap = {

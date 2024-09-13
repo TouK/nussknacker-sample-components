@@ -8,7 +8,7 @@ import pl.touk.nussknacker.engine.api.context.ProcessCompilationError.CustomNode
 import pl.touk.nussknacker.engine.api.parameter.ParameterName
 import pl.touk.nussknacker.engine.build.ScenarioBuilder
 import pl.touk.nussknacker.engine.flink.util.test.FlinkTestScenarioRunner._
-import pl.touk.nussknacker.engine.spel.Implicits.asSpelExpression
+import pl.touk.nussknacker.engine.spel.SpelExtension._
 import pl.touk.nussknacker.engine.util.test.TestScenarioRunner
 import pl.touk.nussknacker.sample.FlinkSampleComponentsBaseClassTest
 import pl.touk.nussknacker.test.ValidatedValuesDetailedMessage
@@ -32,8 +32,8 @@ class CallDetailRecordSourceTest extends Matchers with ValidatedValuesDetailedMe
     Files.write(cdrsFile, cdrs.asJava)
     val scenario = ScenarioBuilder
       .streaming("test scenario")
-      .source("cdr source", "cdr", "fileName" -> s"'${cdrsFile.getFileName.toString}'")
-      .emptySink("end", TestScenarioRunner.testResultSink, "value" -> "#input")
+      .source("cdr source", "cdr", "fileName" -> s"'${cdrsFile.getFileName.toString}'".spel)
+      .emptySink("end", TestScenarioRunner.testResultSink, "value" -> "#input".spel)
     val runner = TestScenarioRunner
       .flinkBased(config, flinkMiniCluster)
       .withExtraComponents(ComponentDefinition("cdr", CallDetailRecordSourceFactory.prepare(cdrsFile.getParent.toString, ';')) :: Nil)
@@ -58,8 +58,8 @@ class CallDetailRecordSourceTest extends Matchers with ValidatedValuesDetailedMe
   def shouldThrowOnNonReadableFile(): Unit = {
     val scenario = ScenarioBuilder
       .streaming("test scenario")
-      .source("cdr source", "cdr", "fileName" -> s"'unexisting.csv'")
-      .emptySink("end", TestScenarioRunner.testResultSink, "value" -> "#input")
+      .source("cdr source", "cdr", "fileName" -> s"'unexisting.csv'".spel)
+      .emptySink("end", TestScenarioRunner.testResultSink, "value" -> "#input".spel)
     val runner = TestScenarioRunner
       .flinkBased(config, flinkMiniCluster)
       .withExtraComponents(ComponentDefinition("cdr", CallDetailRecordSourceFactory.prepare("/tmp", ';')) :: Nil)
