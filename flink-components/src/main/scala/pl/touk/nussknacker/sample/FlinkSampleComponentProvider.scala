@@ -3,8 +3,7 @@ package pl.touk.nussknacker.sample
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
-import pl.touk.nussknacker.engine.api.component.{ComponentDefinition, ComponentProvider, NussknackerVersion}
-import pl.touk.nussknacker.engine.api.process.ProcessObjectDependencies
+import pl.touk.nussknacker.engine.api.component.{ComponentDefinition, ComponentDependencies, ComponentProvider, NussknackerVersion}
 import pl.touk.nussknacker.sample.csv.{CallDetailRecordSourceFactory, CsvSinkFactory, GenericCsvSourceFactory}
 
 //noinspection ScalaUnusedSymbol
@@ -13,7 +12,7 @@ class FlinkSampleComponentProvider extends ComponentProvider {
 
   override def resolveConfigForExecution(config: Config): Config = config
 
-  override def create(config: Config, dependencies: ProcessObjectDependencies): List[ComponentDefinition] = {
+  override def create(config: Config, dependencies: ComponentDependencies): List[ComponentDefinition] = {
     val componentsConfig = config.as[FlinkSampleComponentsConfig]
     List(
       ComponentDefinition("cdr", CallDetailRecordSourceFactory.prepare(componentsConfig.csv.filesDir, componentsConfig.csv.separator.charAt(0))),

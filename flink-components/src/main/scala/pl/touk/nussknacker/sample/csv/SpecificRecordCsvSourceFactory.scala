@@ -1,13 +1,13 @@
 package pl.touk.nussknacker.sample.csv
 
+import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner
 import org.apache.flink.api.common.typeinfo.TypeInformation
 import pl.touk.nussknacker.engine.api.component.UnboundedStreamComponent
 import pl.touk.nussknacker.engine.api.parameter.ParameterName
 import pl.touk.nussknacker.engine.api.process.SourceFactory
-import pl.touk.nussknacker.engine.api.typed.CustomNodeValidationException
+import pl.touk.nussknacker.engine.api.typed.{CustomNodeValidationException, TypedMap}
 import pl.touk.nussknacker.engine.api.{MethodToInvoke, ParamName}
 import pl.touk.nussknacker.engine.flink.api.process.FlinkSource
-import pl.touk.nussknacker.engine.flink.api.timestampwatermark.StandardTimestampWatermarkHandler.toAssigner
 
 import java.io.File
 
@@ -22,7 +22,10 @@ class SpecificRecordCsvSourceFactory[T: TypeInformation](filesDir: File,
     if (!file.canRead) {
       throw CustomNodeValidationException(s"File: '$file' is not readable", paramName = Some(ParameterName("fileName")))
     }
-    new CsvSource[T](file, separator, createRecord, toAssigner(extractTimestamp(_)))
+    val assignProcessingTime: SerializableTimestampAssigner[T] = (element: T, _: Long) => {
+      extractTimestamp(element)
+    }
+    new CsvSource[T](file, separator, createRecord, assignProcessingTime)
   }
 
 }

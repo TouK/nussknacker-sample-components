@@ -9,23 +9,23 @@ plugins {
     id("com.bmuschko.docker-remote-api") version "7.0.0"
 }
 
-val scalaVersion = "2.12.10"
+val scalaVersion = "2.13.18"
 
 group = "pl.touk.nussknacker"
 
 var nussknackerVersion: String by extra
 ext {
     val versionFromEnv = System.getenv()["NUSSKNACKER_VERSION"]
-    if (versionFromEnv.isNullOrBlank()) {
-        nussknackerVersion = File("./nussknacker.version").readText(Charsets.UTF_8).trim()
+    nussknackerVersion = if (versionFromEnv.isNullOrBlank()) {
+        File("./nussknacker.version").readText(Charsets.UTF_8).trim()
     } else {
-        nussknackerVersion = versionFromEnv
+        versionFromEnv
     }
 }
 println("Nussknacker version: $nussknackerVersion")
 
 repositories {
-    maven("https://oss.sonatype.org/content/groups/public/")
+    maven("https://central.sonatype.com/repository/maven-snapshots/")
     mavenCentral()
     maven("https://packages.confluent.io/maven")
 }

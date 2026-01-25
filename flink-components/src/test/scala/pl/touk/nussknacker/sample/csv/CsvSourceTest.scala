@@ -3,6 +3,7 @@ package pl.touk.nussknacker.sample.csv
 import org.junit.jupiter.api.Test
 import org.scalatest.Inside.inside
 import org.scalatest.matchers.should.Matchers
+import pl.touk.nussknacker.engine.api.NodeId
 import pl.touk.nussknacker.engine.api.component.ComponentDefinition
 import pl.touk.nussknacker.engine.api.context.ProcessCompilationError
 import pl.touk.nussknacker.engine.api.context.ProcessCompilationError.CustomNodeError
@@ -16,7 +17,7 @@ import pl.touk.nussknacker.sample.FlinkSampleComponentsBaseClassTest
 import pl.touk.nussknacker.test.ValidatedValuesDetailedMessage
 
 import java.nio.file.Files
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class CsvSourceTest extends Matchers with ValidatedValuesDetailedMessage {
 
@@ -36,7 +37,7 @@ class CsvSourceTest extends Matchers with ValidatedValuesDetailedMessage {
       .source("source", "csvSource", "fileName" -> s"'${csvFile.getFileName.toString}'".spel, "definition" -> "{{'name', 'String'}, {'phoneNumber', 'Long'}}".spel)
       .emptySink("end", TestScenarioRunner.testResultSink, "value" -> "#input".spel)
     val runner = TestScenarioRunner
-      .flinkBased(config, flinkMiniCluster)
+      .flinkBased(modelConfig, flinkMiniCluster)
       .withExtraComponents(ComponentDefinition("csvSource", new GenericCsvSourceFactory(csvFile.getParent.toString, ';')) :: Nil)
       .build()
 
@@ -56,7 +57,7 @@ class CsvSourceTest extends Matchers with ValidatedValuesDetailedMessage {
   @Test
   def shouldThrowOnNonReadableFile(): Unit = {
     testCompilationErrors("fileName" -> "'unexisting.csv'".spel, "definition" -> "{{'name', 'String'}, {'phoneNumber', 'Long'}}".spel) should
-      contain (CustomNodeError("source", "File: 'unexisting.csv' is not readable", Some(ParameterName("fileName"))))
+      contain (CustomNodeError(NodeId("source"), "File: 'unexisting.csv' is not readable", Some(ParameterName("fileName"))))
   }
 
   @Test
@@ -64,7 +65,7 @@ class CsvSourceTest extends Matchers with ValidatedValuesDetailedMessage {
     val emptyFile = Files.createTempFile("test", ".csv")
     emptyFile.toFile.deleteOnExit()
     testCompilationErrors("fileName" -> s"'${emptyFile.getFileName.toString}'".spel, "definition" -> "{{'name', 'String'}, {'phoneNumber'}}".spel) should
-      contain (CustomNodeError("source", "Column 2 should have name and type", Some(ParameterName("definition"))))
+      contain (CustomNodeError(NodeId("source"), "Column 2 should have name and type", Some(ParameterName("definition"))))
   }
 
   @Test
@@ -73,8 +74,8 @@ class CsvSourceTest extends Matchers with ValidatedValuesDetailedMessage {
     emptyFile.toFile.deleteOnExit()
     testCompilationErrors("fileName" -> s"'${emptyFile.getFileName.toString}'".spel, "definition" -> "{{'name', 'String'}, {'phoneNumber', 'Integer'}, {'callDuration', 'java.time.Duration'}}".spel) should
       contain allOf(
-      CustomNodeError("source", "Type for column 'phoneNumber' is not supported", Some(ParameterName("definition"))),
-      CustomNodeError("source", "Type for column 'callDuration' is not supported", Some(ParameterName("definition"))))
+      CustomNodeError(NodeId("source"), "Type for column 'phoneNumber' is not supported", Some(ParameterName("definition"))),
+      CustomNodeError(NodeId("source"), "Type for column 'callDuration' is not supported", Some(ParameterName("definition"))))
   }
 
   private def testCompilationErrors(params: (String, Expression)*): List[ProcessCompilationError] = {
@@ -83,7 +84,7 @@ class CsvSourceTest extends Matchers with ValidatedValuesDetailedMessage {
       .source("source", "csvSource", params: _*)
       .emptySink("end", TestScenarioRunner.testResultSink, "value" -> "#input".spel)
     val runner = TestScenarioRunner
-      .flinkBased(config, flinkMiniCluster)
+      .flinkBased(modelConfig, flinkMiniCluster)
       .withExtraComponents(ComponentDefinition("csvSource", new GenericCsvSourceFactory("/tmp", ';')) :: Nil)
       .build()
     runner.runWithoutData[java.util.Map[String, Any]](scenario).invalidValue.toList

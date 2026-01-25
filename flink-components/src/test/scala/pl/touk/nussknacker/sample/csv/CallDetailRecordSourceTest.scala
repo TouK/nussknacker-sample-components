@@ -3,6 +3,7 @@ package pl.touk.nussknacker.sample.csv
 import org.junit.jupiter.api.Test
 import org.scalatest.Inside.inside
 import org.scalatest.matchers.should.Matchers
+import pl.touk.nussknacker.engine.api.NodeId
 import pl.touk.nussknacker.engine.api.component.ComponentDefinition
 import pl.touk.nussknacker.engine.api.context.ProcessCompilationError.CustomNodeError
 import pl.touk.nussknacker.engine.api.parameter.ParameterName
@@ -13,9 +14,10 @@ import pl.touk.nussknacker.engine.util.test.TestScenarioRunner
 import pl.touk.nussknacker.sample.FlinkSampleComponentsBaseClassTest
 import pl.touk.nussknacker.test.ValidatedValuesDetailedMessage
 
+import java.io.File
 import java.nio.file.Files
 import java.time.Duration
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class CallDetailRecordSourceTest extends Matchers with ValidatedValuesDetailedMessage {
 
@@ -35,7 +37,7 @@ class CallDetailRecordSourceTest extends Matchers with ValidatedValuesDetailedMe
       .source("cdr source", "cdr", "fileName" -> s"'${cdrsFile.getFileName.toString}'".spel)
       .emptySink("end", TestScenarioRunner.testResultSink, "value" -> "#input".spel)
     val runner = TestScenarioRunner
-      .flinkBased(config, flinkMiniCluster)
+      .flinkBased(modelConfig, flinkMiniCluster)
       .withExtraComponents(ComponentDefinition("cdr", CallDetailRecordSourceFactory.prepare(cdrsFile.getParent.toString, ';')) :: Nil)
       .build()
 
@@ -61,13 +63,14 @@ class CallDetailRecordSourceTest extends Matchers with ValidatedValuesDetailedMe
       .source("cdr source", "cdr", "fileName" -> s"'unexisting.csv'".spel)
       .emptySink("end", TestScenarioRunner.testResultSink, "value" -> "#input".spel)
     val runner = TestScenarioRunner
-      .flinkBased(config, flinkMiniCluster)
+      .flinkBased(modelConfig, flinkMiniCluster)
       .withExtraComponents(ComponentDefinition("cdr", CallDetailRecordSourceFactory.prepare("/tmp", ';')) :: Nil)
       .build()
 
     val compilationErrors = runner.runWithoutData[CallDetailRecord](scenario).invalidValue.toList
 
-    compilationErrors should contain only CustomNodeError("cdr source", "File: '/tmp/unexisting.csv' is not readable", Some(ParameterName("fileName")))
+    val tempFilePath = new File("/tmp/unexisting.csv").toString
+    compilationErrors should contain only CustomNodeError(NodeId("cdr source"), s"File: '$tempFilePath' is not readable", Some(ParameterName("fileName")))
   }
 }
 
