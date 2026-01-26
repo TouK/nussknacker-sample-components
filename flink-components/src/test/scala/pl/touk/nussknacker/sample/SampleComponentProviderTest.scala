@@ -23,7 +23,7 @@ class SampleComponentProviderTest extends Matchers with ValidatedValuesDetailedM
       .emptySink("end", TestScenarioRunner.testResultSink, "value" -> "#output".spel)
 
     val runner = TestScenarioRunner
-      .flinkBased(config, flinkMiniCluster)
+      .flinkBased(modelConfig, flinkMiniCluster)
       .withExtraComponents(ComponentDefinition("randomString", new RandomStringProvider) :: Nil)
       .build()
 

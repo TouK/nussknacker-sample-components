@@ -38,10 +38,5 @@ official Nussknacker image with jar added. See gradle project and `docker/Docker
 
 ## Gradle
     
-`./gradlew shadowJar` to build fat jar
-`./gradlew buildImages` to build Docker images of Designer and Lite runtime. 
-
-## Sbt
-
-`sbt assembly` to build fat jar. At the moment we don't provide scripts for image generation,
-use `docker/Dockerfile` as a base. 
+`./gradlew shadowJar` to build fat JARs
+`./gradlew buildImages` to build Docker images of Designer and Lite runtime

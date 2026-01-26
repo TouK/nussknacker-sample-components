@@ -12,15 +12,14 @@ import pl.touk.nussknacker.engine.api.context.transformation.{DefinedEagerParame
 import pl.touk.nussknacker.engine.api.context.{ProcessCompilationError, ValidationContext}
 import pl.touk.nussknacker.engine.api.definition.{NodeDependency, ParameterCreatorWithNoDependency, ParameterDeclaration, ParameterExtractor}
 import pl.touk.nussknacker.engine.api.parameter.ParameterName
-import pl.touk.nussknacker.engine.api.process.{Source, SourceFactory}
+import pl.touk.nussknacker.engine.api.process.SourceFactory
 import pl.touk.nussknacker.engine.api.typed.TypedMap
 import pl.touk.nussknacker.engine.api.typed.typing.{Typed, TypedObjectTypingResult, TypingResult}
-import pl.touk.nussknacker.engine.flink.api.timestampwatermark.StandardTimestampWatermarkHandler.toAssigner
 import pl.touk.nussknacker.engine.util.typing.TypingUtils
-import pl.touk.nussknacker.sample.csv.GenericCsvSourceFactory.{ColumnParsers, DefinitionParameterName, DefinitionParameterDeclaration, FileNameParameterName, FileNameParameterDeclaration}
+import pl.touk.nussknacker.sample.csv.GenericCsvSourceFactory.{ColumnParsers, DefinitionParameterDeclaration, DefinitionParameterName, FileNameParameterDeclaration, FileNameParameterName}
 
 import java.io.File
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object GenericCsvSourceFactory {
   val FileNameParameterName: ParameterName = ParameterName("fileName")
@@ -39,7 +38,9 @@ object GenericCsvSourceFactory {
 /**
  * A sample generic CSV source. It has two parameters - fileName and definition. Definition describe columns in the file - names and their types.
  */
-class GenericCsvSourceFactory(filesDir: String, separator: Char) extends SourceFactory with SingleInputDynamicComponent[Source] with UnboundedStreamComponent {
+class GenericCsvSourceFactory(filesDir: String, separator: Char) extends SourceFactory with SingleInputDynamicComponent with UnboundedStreamComponent {
+
+  override type Implementation = CsvSource[TypedMap]
 
   override type State = Nothing
 
@@ -62,14 +63,17 @@ class GenericCsvSourceFactory(filesDir: String, separator: Char) extends SourceF
         )
   }
 
-  override def implementation(params: Params, dependencies: List[NodeDependencyValue], finalState: Option[State]): Source = {
+  override def implementation(params: Params,
+                              dependencies: List[NodeDependencyValue],
+                              finalState: Option[State]): CsvSource[TypedMap] = {
     val fileName = FileNameParameterDeclaration.extractValueUnsafe(params)
     val file = new File(filesDir, fileName)
     val definition = DefinitionParameterDeclaration.extractValueUnsafe(params)
     // For each event, current time is assigned. We could also add a parameter with timestamp column name and assign timestamps
     // based on the given column value.
-    val assignProcessingTime: SerializableTimestampAssigner[TypedMap] = toAssigner(_ => System.currentTimeMillis())
-    //TODO: what should be here
+    val assignProcessingTime: SerializableTimestampAssigner[TypedMap] = (_: TypedMap, _: Long) => {
+      System.currentTimeMillis()
+    }
     new CsvSource[TypedMap](file, separator, createRecordFunction(definition), assignProcessingTime) (TypeInformation.of(classOf[TypedMap]))
   }
 

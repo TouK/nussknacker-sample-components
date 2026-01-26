@@ -10,7 +10,7 @@ import pl.touk.nussknacker.engine.util.test.TestScenarioRunner
 import pl.touk.nussknacker.sample.FlinkSampleComponentsBaseClassTest
 
 import java.nio.file.Files
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class CsvSinkTest extends Matchers {
 
@@ -25,7 +25,7 @@ class CsvSinkTest extends Matchers {
       .source("source", TestScenarioRunner.testDataSource)
       .emptySink("end", "csvSink", "fileName" -> s"'${resultsFile.getFileName.toFile}'".spel,  "row" -> "{#input, 'const'}".spel)
     val runner = TestScenarioRunner
-      .flinkBased(config, flinkMiniCluster)
+      .flinkBased(modelConfig, flinkMiniCluster)
       .withExtraComponents(ComponentDefinition("csvSink", new CsvSinkFactory(resultsFile.getParent.toString, ';')) :: Nil)
       .build()
 
