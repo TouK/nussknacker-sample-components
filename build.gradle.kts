@@ -1,58 +1,6 @@
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-
 plugins {
-    base
-    `java-library`
-    scala
-    idea
-    id("com.github.johnrengelman.shadow") version "7.0.0"
-    id("com.bmuschko.docker-remote-api") version "7.0.0"
+    id("nussknacker-sample-components.conventions")
+    id("com.gradleup.shadow") version "9.3.1"
 }
 
-val scalaVersion = "2.13.18"
-
-group = "pl.touk.nussknacker"
-
-var nussknackerVersion: String by extra
-ext {
-    val versionFromEnv = System.getenv()["NUSSKNACKER_VERSION"]
-    nussknackerVersion = if (versionFromEnv.isNullOrBlank()) {
-        File("./nussknacker.version").readText(Charsets.UTF_8).trim()
-    } else {
-        versionFromEnv
-    }
-}
-println("Nussknacker version: $nussknackerVersion")
-
-repositories {
-    maven("https://central.sonatype.com/repository/maven-snapshots/")
-    mavenCentral()
-    maven("https://packages.confluent.io/maven")
-}
-
-fun commonDockerAction(from: String, target: String, task: DockerBuildImage) {
-    with(task) {
-        dependsOn(tasks.shadowJar)
-        inputDir.set(file("docker"))
-        images.add("$target:latest")
-        buildArgs.putAll(mapOf(
-            "JAR_PATH" to (tasks.shadowJar.flatMap { it.archiveFile }.get().asFile.absolutePath),
-            "NU_IMAGE" to "$from:${nussknackerVersion}"
-        ))
-    }
-}
-
-tasks.create("buildDesignerImage", DockerBuildImage::class) {
-    commonDockerAction("touk/nussknacker", rootProject.name, this)
-}
-tasks.create("buildLiteRuntimeAppImage", DockerBuildImage::class) {
-    commonDockerAction("touk/nussknacker-lite-runtime-app", "${rootProject.name}-lite-runtime-app", this)
-}
-
-tasks.create("buildImages", DefaultTask::class) {
-    dependsOn("buildDesignerImage", "buildLiteRuntimeAppImage")
-}
-
-tasks.test {
-    useJUnitPlatform()
-}
+println("Nussknacker version: ${versions.nussknacker}")

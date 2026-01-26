@@ -4,8 +4,8 @@ This project contains sample implementation of custom components for [Nussknacke
 
 ## Common
 
-We provide simple [enricher provider](components/src/main/scala/pl/touk/nussknacker/sample/SampleComponentProvider.scala)
-which generates random string, using `commons-text` library to demonstrate how to add additional dependencies.
+We provide a simple [enricher provider](components/src/main/scala/pl/touk/nussknacker/sample/SampleComponentProvider.scala)
+which generates a random string, using the `commons-text` library, demonstrating how to add dependencies.
 
 ## Streaming-Flink only
 
@@ -19,24 +19,19 @@ sample Flink components to give an idea of how to implement Flink based sources,
 
 # Usage
 
-To use custom component, you have to put fat jar with the component 
-on [model classpath](https://docs.nussknacker.io/documentation/docs/installation_configuration_guide/ModelConfiguration#classpath-configuration).
-If you use default configuration, the easiest way is to put the jar in `components/common` directory, 
-as this directory is added to classpath.
+To use a custom component, you have to put a fat JAR with the component 
+on [model classpath](https://docs.nussknacker.io/documentation/docs/configuration/model/ModelConfiguration/#classpath-configuration).
+If you use the default configuration, the easiest way is to put the JAR file in `components/common` directory.
 
-If you are using setup based on docker-compose, you can mount jar as additional volume, adding 
-```
+If you are using a setup based on Docker Compose, you can mount JAR file as an additional volume, adding 
+```yaml
 - /(...)/sampleComponents.jar:/opt/nussknacker/components/common/sampleComponents.jar
 ``` 
-in [docker-compose](https://github.com/TouK/nussknacker-quickstart/blob/main/docker/docker-compose.yml#L25)
+in [docker-compose.yml](https://github.com/TouK/nussknacker-quickstart/blob/main/docker-compose.yml#L22)
 
-For more production-ready setups (e.g. Kubernetes) it is better to create image based on
-official Nussknacker image with jar added. See gradle project and `docker/Dockerfile` for a sample.
-
-`docker/runDocker.sh` provides minimal script allowing to run Designer with added library 
-(it doesn't connect with Kafka, Flink etc., but can be used to check if component is configured properly)
+For more production-ready setups (e.g. Kubernetes) it is better to create an image based on
+the official Nussknacker image with appropriate JAR files added.
 
 ## Gradle
-    
+
 `./gradlew shadowJar` to build fat JARs
-`./gradlew buildImages` to build Docker images of Designer and Lite runtime
