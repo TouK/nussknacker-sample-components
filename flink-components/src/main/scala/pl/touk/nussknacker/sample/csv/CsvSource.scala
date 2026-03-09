@@ -29,10 +29,11 @@ class CsvSource[T: TypeInformation](file: File,
       .fromSource(
         flinkSource(file, separator, createRecord),
         WatermarkStrategyUtils.boundedOutOfOrderness(timestampAssigner, maxOutOfOrderness = Duration.ofMinutes(10)),
-        flinkNodeContext.nodeId.id,
+        flinkNodeContext.nodeId.value,
         implicitly[TypeInformation[T]]
       )
-      .uid(flinkNodeContext.nodeId.id)
+      .uid(flinkNodeContext.nodeId.value)
+      .name(flinkNodeContext.nodeName.value)
       .map(
         new FlinkContextInitializingFunction(
           contextInitializer,
